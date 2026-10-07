@@ -1,0 +1,91 @@
+:root {
+  --ink: #0f1b2d;
+  --panel: #1b2b44;
+  --bamboo: #6fa287;
+  --moon: #f2d479;
+  --mist: #e8efe9;
+  --line: #34496a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; background: #070d18; }
+body {
+  font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  color: var(--mist);
+  line-height: 1.7;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outline-offset: 2px; }
+
+#app { position: relative; max-width: 480px; height: 100dvh; margin: 0 auto; background: var(--ink); overflow: hidden; }
+.screen {
+  display: none; position: absolute; inset: 0; flex-direction: column;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.screen.on { display: flex; }
+
+/* ボタン */
+.btn { min-height: 48px; padding: 0 24px; border: 2px solid var(--bamboo); border-radius: 999px; background: transparent; }
+.btn.main { background: var(--bamboo); color: #08150f; font-weight: 700; }
+.icon { width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 20px; }
+
+/* タイトル */
+#title { text-align: center; }
+#title h1 { margin: 20px 0 0; font-size: 24px; letter-spacing: .08em; }
+#title h1 small { font-size: 14px; letter-spacing: 0; color: var(--bamboo); }
+.actions { display: flex; flex-direction: column; gap: 12px; width: 220px; margin: 0 auto 36px; }
+
+/* キャラ表示(画像ができたら background-image に差し替え) */
+.stage { flex: 1; display: flex; align-items: flex-end; justify-content: space-around; padding: 24px 16px 0; }
+.stage.solo { align-items: center; justify-content: center; }
+.chara {
+  width: 120px; height: 200px; border-radius: 60px 60px 12px 12px; background: var(--panel) center / cover no-repeat;
+  border: 2px solid var(--line); display: grid; place-items: center; font-size: 44px; font-weight: 700;
+  opacity: .45; transition: opacity .2s, transform .2s;
+}
+.chara.speak { opacity: 1; transform: translateY(-8px); border-color: var(--moon); }
+.chara.big { width: 170px; height: 280px; border-radius: 85px 85px 16px 16px; font-size: 64px; opacity: 1; }
+.chara:empty { display: none; }
+/* チュートリアル・ボス戦: 右のキャラを高い位置に */
+.stage.stagger #charaR { align-self: flex-start; margin-top: 8%; }
+
+/* テキストボックス */
+.textbox { margin: 12px; padding: 16px 18px 28px; min-height: 170px; border: 2px solid var(--line); border-radius: 16px; background: var(--panel); position: relative; cursor: pointer; }
+#who { color: var(--moon); font-weight: 700; margin-bottom: 4px; }
+#text { margin: 0; }
+.tap { position: absolute; right: 14px; bottom: 8px; font-size: 12px; color: var(--bamboo); }
+
+/* ホーム・上部バー */
+.topbar { display: flex; align-items: flex-start; gap: 12px; padding: 8px 12px; z-index: 1100; }
+.label { font-weight: 700; }
+.progress { margin-left: auto; width: 56%; font-size: 13px; }
+.progress .row { display: flex; align-items: center; gap: 8px; }
+.bar { flex: 1; height: 16px; border: 2px solid var(--bamboo); border-radius: 999px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--bamboo); transition: width .6s; }
+.progress b { min-width: 3em; text-align: right; }
+#menu { position: absolute; top: calc(64px + env(safe-area-inset-top, 0px)); left: 12px; z-index: 1200; display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 16px; background: var(--panel); border: 2px solid var(--line); }
+#menu[hidden] { display: none; }
+
+/* マップ(全画面。戻るボタンだけ重ねる) */
+#map .topbar { position: absolute; top: env(safe-area-inset-top, 0px); left: 0; }
+#map .icon { background: rgba(27,43,68,.9); }
+#mapView { flex: 1; background: #0b1424; }
+.pin { width: 34px; height: 34px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--moon); border: 3px solid #fff; }
+.pin.locked { background: #6b7280; border-color: #9ca3af; }
+.pin.next { animation: bob 1.4s ease-in-out infinite; }
+@keyframes bob { 50% { margin-top: -8px; } }
+.spot, .toast { position: absolute; left: 12px; right: 12px; z-index: 1000; padding: 14px 16px; border-radius: 14px; background: var(--panel); border: 2px solid var(--line); }
+.spot { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+.toast { top: 72px; text-align: center; }
+.spot[hidden], .toast[hidden] { display: none; }
+
+/* AI会話 */
+.inputrow { display: flex; gap: 8px; padding: 10px 12px; border-top: 2px solid var(--line); }
+.inputrow input { flex: 1; min-width: 0; min-height: 48px; padding: 0 14px; border-radius: 999px; border: 2px solid var(--line); background: var(--ink); color: inherit; font: inherit; font-size: 16px; }
+
+/* デバッグ */
+#debug { position: fixed; right: 4px; top: 45%; z-index: 2000; display: flex; flex-direction: column; gap: 6px; opacity: .85; }
+#debug[hidden] { display: none; }
+#debug button { padding: 6px 10px; border-radius: 8px; border: 1px solid #888; background: #222; font-size: 12px; }
+
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
