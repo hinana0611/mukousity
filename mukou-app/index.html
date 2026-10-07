@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>向日市ものがたり(仮)</title>
+<title>Mukou City with Kaguya</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
@@ -38,7 +38,7 @@
   <!-- ホーム -->
   <section class="screen" id="home">
     <div class="topbar">
-      <button class="icon" id="menuBtn" aria-label="メニュー">☰</button>
+      <button class="icon menuBtn" aria-label="メニュー">☰</button>
       <div class="progress">
         <span>進捗度</span>
         <div class="row">
@@ -47,10 +47,6 @@
         </div>
       </div>
     </div>
-    <nav id="menu" hidden>
-      <button class="btn" data-go="map">📍 マップ</button>
-      <button class="btn" data-go="chat">💬 会話</button>
-    </nav>
     <div class="stage solo"><div class="chara big" id="homeChara"></div></div>
   </section>
  
@@ -58,6 +54,7 @@
   <section class="screen" id="map">
     <div class="topbar">
       <button class="icon" data-go="home" aria-label="ホームへ">←</button>
+      <button class="icon menuBtn" aria-label="メニュー">☰</button>
     </div>
     <div id="mapView"></div>
     <div class="spot" id="spot" hidden></div>
@@ -68,6 +65,7 @@
   <section class="screen" id="chat">
     <div class="topbar">
       <button class="icon" data-go="home" aria-label="ホームへ">←</button>
+      <button class="icon menuBtn" aria-label="メニュー">☰</button>
       <span class="label" id="chatTitle">会話</span>
     </div>
     <div class="stage solo"><div class="chara big" id="chatChara"></div></div>
@@ -81,6 +79,14 @@
     </div>
   </section>
  
+  <!-- 共通メニュー(ホーム・マップ・会話の☰から開く) -->
+  <nav id="menu" hidden>
+    <button class="btn" data-go="home">🏠 ホーム</button>
+    <button class="btn" data-go="map">📍 マップ</button>
+    <button class="btn" data-go="chat">💬 会話</button>
+    <button class="btn" data-go="title">🎬 タイトルへ</button>
+  </nav>
+ 
   <!-- デバッグ(URLの末尾に ?debug=1 を付けると表示) -->
   <div id="debug" hidden>
     <button data-dbg="skip">次の章へ</button>
@@ -93,4 +99,3 @@
 <script type="module" src="js/main.js"></script>
 </body>
 </html>
- 

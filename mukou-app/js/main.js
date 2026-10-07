@@ -82,10 +82,15 @@ function showHome() {
   show("home");
 }
  
-$("menuBtn").onclick = () => { $("menu").hidden = !$("menu").hidden; };
+ 
  
 document.addEventListener("click", e => {
+  // ☰ で開閉。メニューの外を押したら閉じる
+  if (e.target.closest(".menuBtn")) $("menu").hidden = !$("menu").hidden;
+  else if (!e.target.closest("#menu")) $("menu").hidden = true;
+ 
   const go = e.target.closest("[data-go]")?.dataset.go;
+  if (go === "title") showTitle();
   if (go === "home") showHome();
   if (go === "map") openMap();
   if (go === "chat") openChat();
@@ -173,3 +178,4 @@ if (new URLSearchParams(location.search).has("debug")) {
 }
  
 showTitle();
+ 
