@@ -1,7 +1,7 @@
 // マップとピン。Leaflet(index.html で読み込み済み)を使う
 // ※座標はおおよその位置です。地図で確認して調整してください。
 export const pins = [
-  { id: "nagaokakyu", name: "長岡宮跡", lat: 34.9508, lng: 135.6963, chapter: "nagaoka",
+  { id: "nagaokakyu", name: "長岡宮跡", lat: 34.9443139, lng: 135.703389, chapter: "nagaoka",
     info: "長岡京の中心だった宮殿の跡。大極殿の跡地が公園になっている。" },
   { id: "takenomichi", name: "竹の径", lat: 34.956667, lng: 135.696111, chapter: null,
     info: "竹林が続く散策路。かぐやの物語ともつながる場所。" },
