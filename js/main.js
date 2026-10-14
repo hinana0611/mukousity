@@ -4,7 +4,7 @@ import { showMap } from "./map.js";
 import { sendMessage } from "./chat.js";
  
 const $ = id => document.getElementById(id);
-const order = ["prologue", "tutorial", ...pinOrder, "boss", "ed"];
+const order = ["prologue", "tutorial", ...pinOrder, "ed"]; // pinOrder の最後が boss
  
 // クリア後モード = EDまで終えている状態(「はじめから」でやり直すと通常モードに戻る)
 const freeMode = () => state.cleared && state.done.includes("ed");
@@ -36,7 +36,7 @@ $("start").onclick = () => {
   if (freeMode()) return showHome();
   const next = order.find(id => !state.done.includes(id));
   // 会話で進む章(途中でやめた場合も、その章の頭から再開)
-  if (["prologue", "tutorial", "boss", "ed"].includes(next)) return playChapter(next);
+  if (["prologue", "tutorial", "ed"].includes(next)) return playChapter(next);
   showHome(); // マップのピンで進める章は、ホームから
 };
  
@@ -178,4 +178,3 @@ if (new URLSearchParams(location.search).has("debug")) {
 }
  
 showTitle();
- 

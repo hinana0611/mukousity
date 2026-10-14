@@ -5,10 +5,12 @@ export const pins = [
     info: "長岡京の中心だった宮殿の跡。大極殿の跡地が公園になっている。" },
   { id: "takenomichi", name: "竹の径", lat: 34.956667, lng: 135.696111, chapter: null,
     info: "竹林が続く散策路。かぐやの物語ともつながる場所。" },
-  { id: "shiryokan", name: "資料館", lat: 34.9490, lng: 135.6995, chapter: "shiryokan",
-    info: "向日市の歴史や出土品を紹介する資料館。" },
   { id: "mukojinja", name: "向日神社", lat: 34.944151, lng: 135.697113, chapter: null,
-    info: "古くから町を見守ってきた神社。" }
+    info: "古くから町を見守ってきた神社。" },
+  { id: "chiyozakura", name: "千代桜天満宮", lat: 34.9561, lng: 135.6951, chapter: "michizane",
+    info: "学問の神様・菅原道真を祀る天満宮。" },
+  { id: "shiryokan", name: "資料館", lat: 34.9490, lng: 135.6995, chapter: null,
+    info: "向日市の歴史や出土品を紹介する資料館。(ストーリーには使わず、クリア後の解説用)" }
 ];
 
 const CENTER = [34.9490, 135.6980]; // 向日市役所のあたり
