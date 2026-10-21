@@ -14,7 +14,7 @@
  
   <!-- タイトル -->
   <section class="screen" id="title">
-    <h1>Mukou City with Kaguya<small>
+    <h1>Mukou City with Kaguya</h1>
     <div class="stage solo"><div class="chara big" id="titleChara"></div></div>
     <div class="actions">
       <button class="btn main" id="start">ゲームstart</button>
@@ -61,6 +61,16 @@
     <div class="toast" id="toast" hidden></div>
   </section>
  
+  <!-- ミニゲーム(中身は js/games.js) -->
+  <section class="screen" id="game">
+    <div id="gameBox"></div>
+    <div id="gameResult" hidden>
+      <p id="resultMsg"></p>
+      <button class="btn main" id="retryBtn">もう一度</button>
+      <button class="btn" id="toMapBtn">マップへ</button>
+    </div>
+  </section>
+
   <!-- AI会話 -->
   <section class="screen" id="chat">
     <div class="topbar">

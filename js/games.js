@@ -1,9 +1,11 @@
+import { start as wordsearch } from "./games/wordsearch.js";
+
 // ミニゲームの入口。ゲームは start(container, onFinish) の形に揃える。
 //   container … ゲームを表示する場所(div)
 //   onFinish("clear" | "fail") … 終わったら呼ぶ
 //   戻り値 … ゲームを止める関数(画面を離れるときに呼ばれる)
 //
-// いまは全部「仮のゲーム」(クリア/失敗ボタンだけ)です。
+// 本物ができたゲーム: wordsearch。それ以外は「仮のゲーム」(クリア/失敗ボタンだけ)です。
 // 本物ができたら、該当する id を差し替えていきます。
 
 const titles = {
@@ -31,7 +33,10 @@ function placeholder(id, box, onFinish) {
   return () => { box.innerHTML = ""; box.onclick = null; };
 }
 
-const impl = {}; // 本物のゲームができたら、ここに impl.wordsearch = start; のように登録
+// 本物のゲームができたら、ここに登録する
+const impl = {
+  wordsearch
+};
 
 export function startGame(id, box, onFinish) {
   return (impl[id] || ((b, f) => placeholder(id, b, f)))(box, onFinish);
