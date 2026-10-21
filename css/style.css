@@ -4,7 +4,7 @@
   --bamboo: #6fa287;
   --moon: #f2d479;
   --mist: #e8efe9;
-  --line: #feeed0;
+  --line: #34496a;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -82,6 +82,13 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 /* AI会話 */
 .inputrow { display: flex; gap: 8px; padding: 10px 12px; border-top: 2px solid var(--line); }
 .inputrow input { flex: 1; min-width: 0; min-height: 48px; padding: 0 14px; border-radius: 999px; border: 2px solid var(--line); background: var(--ink); color: inherit; font: inherit; font-size: 16px; }
+
+/* ミニゲーム */
+#gameBox { flex: 1; display: flex; align-items: center; justify-content: center; padding: 12px; }
+.placeholder { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.placeholder .actions { margin: 12px 0 0; }
+#gameResult { position: absolute; inset: 0; z-index: 1500; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: rgba(15,27,45,.92); }
+#gameResult[hidden] { display: none; }
 
 /* デバッグ */
 #debug { position: fixed; right: 4px; top: 45%; z-index: 2000; display: flex; flex-direction: column; gap: 6px; opacity: .85; }
