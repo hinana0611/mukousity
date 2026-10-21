@@ -1,13 +1,6 @@
 // ゲームの状態を一か所で管理し、localStorage に保存する
 const KEY = "mukou-game";
 export const TOTAL = 7; // 章の数(story.js の chapters と合わせる)
-
-const initial = {
-  done: [],                                  // クリアした章のid
-  cleared: false,                            // 一度でもクリアしたか
-  unlockedPins: ["nagaokakyu", "mukojinja", "chiyozakura", "takenomichi"]
-};
-
 export const state = load();
 
 function load() {
