@@ -126,8 +126,10 @@ const nextChapter = () => chapterOrder.find(id => !state.done.includes(id));
 function pinStatus(pin) {
   if (freeMode()) return "open";
   if (!state.unlockedPins.includes(pin.id)) return "locked";
-  if (pin.chapters.includes(nextChapter())) return "next";
-  return pin.chapters.every(c => state.done.includes(c)) ? "open" : "locked";
+  // chapters(配列)が基本。古い書き方の chapter(1つ)でも動くようにしておく
+  const chs = pin.chapters ?? (pin.chapter ? [pin.chapter] : []);
+  if (chs.includes(nextChapter())) return "next";
+  return chs.length > 0 && chs.every(c => state.done.includes(c)) ? "open" : "locked";
 }
 
 function toast(msg) {
