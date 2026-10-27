@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mukou City with Kaguya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+ 
+  <!-- タイトル -->
+  <section class="screen" id="title">
+    <h1>Mukou City with Kaguya</h1>
+    <div class="stage solo"><div class="chara big" id="titleChara"></div></div>
+    <div class="actions">
+      <button class="btn main" id="start">ゲームstart</button>
+      <button class="btn" id="restart" hidden>はじめから</button>
+    </div>
+  </section>
+ 
+  <!-- 会話(プロローグ・チュートリアル・ボス・EDで共通) -->
+  <section class="screen" id="dialog">
+    <div class="stage" id="dialogStage">
+      <div class="chara" id="charaL"></div>
+      <div class="chara" id="charaR"></div>
+    </div>
+    <div class="textbox" id="textbox">
+      <div id="who"></div>
+      <p id="text"></p>
+      <span class="tap">タップで次へ</span>
+    </div>
+  </section>
+ 
+  <!-- ホーム -->
+  <section class="screen" id="home">
+    <div class="topbar">
+      <button class="menuBtn menuTab" aria-label="メニュー" aria-expanded="false">メニュー <span aria-hidden="true">▾</span></button>
+      <div class="progress">
+        <span>進捗度</span>
+        <div class="row">
+          <div class="bar"><i id="barFill"></i></div>
+          <b id="barText">0%</b>
+        </div>
+      </div>
+    </div>
+    <div class="stage solo"><div class="chara big" id="homeChara"></div></div>
+  </section>
+ 
+  <!-- マップ -->
+  <section class="screen" id="map">
+    <div class="topbar">
+      <button class="icon" data-go="home" aria-label="ホームへ">←</button>
+      <button class="menuBtn menuTab" aria-label="メニュー" aria-expanded="false">メニュー <span aria-hidden="true">▾</span></button>
+    </div>
+    <div id="mapView"></div>
+    <div class="spot" id="spot" hidden></div>
+    <div class="toast" id="toast" hidden></div>
+  </section>
+ 
+  <!-- ミニゲーム(中身は js/games.js) -->
+  <section class="screen" id="game">
+    <div id="gameBox"></div>
+    <div id="gameResult" hidden>
+      <p id="resultMsg"></p>
+      <button class="btn main" id="retryBtn">もう一度</button>
+      <button class="btn" id="toMapBtn">マップへ</button>
+    </div>
+  </section>
+
+  <!-- AI会話 -->
+  <section class="screen" id="chat">
+    <div class="topbar">
+      <button class="icon" data-go="home" aria-label="ホームへ">←</button>
+      <button class="menuBtn menuTab" aria-label="メニュー" aria-expanded="false">メニュー <span aria-hidden="true">▾</span></button>
+      <span class="label" id="chatTitle">会話</span>
+    </div>
+    <div class="stage solo"><div class="chara big" id="chatChara"></div></div>
+    <div class="textbox" id="chatBox">
+      <div id="chatWho"></div>
+      <p id="chatText"></p>
+    </div>
+    <div class="inputrow">
+      <input id="msg" type="text" placeholder="メッセージを入力" autocomplete="off">
+      <button class="btn main" id="send">送る</button>
+    </div>
+  </section>
+ 
+  <!-- 共通メニュー(ホーム・マップ・会話の☰から開く) -->
+  <nav id="menu" hidden>
+    <button class="btn" data-go="home">🏠 ホーム</button>
+    <button class="btn" data-go="map">📍 マップ</button>
+    <button class="btn" data-go="chat">💬 会話</button>
+    <button class="btn" data-go="title">🎬 タイトルへ</button>
+  </nav>
+ 
+  <!-- デバッグ(URLの末尾に ?debug=1 を付けると表示) -->
+  <div id="debug" hidden>
+    <button data-dbg="skip">次の章へ</button>
+    <button data-dbg="clear">クリア済みにする</button>
+    <button data-dbg="reset">全リセット</button>
+  </div>
+</div>
+ 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
