@@ -12,7 +12,11 @@ const titles = {
   danmaku_tutorial: "弾幕(チュートリアル)",
   slide_puzzle: "スライドパズル",
   wordsearch: "ワード探し",
+<<<<<<< HEAD
   bamboo_slide: "木責スライドゲーム",
+=======
+  runner: "横スライダー",
+>>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
   danmaku_boss: "弾幕(ラスボス)"
 };
 

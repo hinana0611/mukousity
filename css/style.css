@@ -41,10 +41,16 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 .chara {
   width: 120px; height: 200px; border-radius: 60px 60px 12px 12px; background: var(--panel) center / cover no-repeat;
   border: 2px solid var(--line); display: grid; place-items: center; font-size: 44px; font-weight: 700;
+<<<<<<< HEAD
   transition: opacity .2s, transform .2s;
 }
 .chara.dim { opacity: .45; } /* 2人映っているとき、話していない方 */
 .chara.speak { transform: translateY(-8px); border-color: var(--moon); }
+=======
+  opacity: .45; transition: opacity .2s, transform .2s;
+}
+.chara.speak { opacity: 1; transform: translateY(-8px); border-color: var(--moon); }
+>>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
 .chara.big { width: 170px; height: 280px; border-radius: 85px 85px 16px 16px; font-size: 64px; opacity: 1; }
 .chara:empty { display: none; }
 /* チュートリアル・ボス戦: 右のキャラを高い位置に */
@@ -64,6 +70,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 .bar { flex: 1; height: 16px; border: 2px solid var(--bamboo); border-radius: 999px; overflow: hidden; }
 .bar i { display: block; height: 100%; width: 0; background: var(--bamboo); transition: width .6s; }
 .progress b { min-width: 3em; text-align: right; }
+<<<<<<< HEAD
 /* メニューボタン(左上)と、上から下りてくるメニュー */
 .menuTab { min-height: 48px; padding: 0 16px; border: 2px solid var(--line); border-radius: 999px; background: var(--panel); font-weight: 700; }
 #menu { position: absolute; top: calc(60px + env(safe-area-inset-top, 0px)); left: 12px; z-index: 1200; display: flex; flex-direction: column; gap: 6px; min-width: 190px; padding: 10px; border-radius: 16px; background: var(--panel); border: 2px solid var(--line); box-shadow: 0 8px 24px rgba(0,0,0,.4); transform-origin: top left; }
@@ -71,6 +78,10 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 #menu:not([hidden]) { animation: menuDrop .22s ease-out; }
 #menu .btn { display: flex; align-items: center; justify-content: flex-start; gap: 8px; border-radius: 12px; text-align: left; }
 @keyframes menuDrop { from { opacity: 0; transform: translateY(-14px) scaleY(.9); } to { opacity: 1; transform: none; } }
+=======
+#menu { position: absolute; top: calc(64px + env(safe-area-inset-top, 0px)); left: 12px; z-index: 1200; display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 16px; background: var(--panel); border: 2px solid var(--line); }
+#menu[hidden] { display: none; }
+>>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
 
 /* マップ(全画面。戻るボタンだけ重ねる) */
 #map .topbar { position: absolute; top: env(safe-area-inset-top, 0px); left: 0; }
@@ -117,3 +128,11 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 #debug button { padding: 6px 10px; border-radius: 8px; border: 1px solid #888; background: #222; font-size: 12px; }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+<<<<<<< HEAD
+=======
+
+/* 主人公のセリフ中はキャラクター表示エリアを非表示 */
+.stage.player-speaking #charaL,
+.stage.player-speaking #charaR {
+  display: none;}
+>>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
