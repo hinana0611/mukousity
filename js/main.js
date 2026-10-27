@@ -18,19 +18,12 @@ function show(name) {
   $("menu").hidden = true;
 }
 
-<<<<<<< HEAD
 function setChara(el, key, speaking, dim = false) {
-=======
-function setChara(el, key, speaking) {
->>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
   const c = characters[key];
   el.textContent = c && !c.image ? c.initial : "";
   el.style.backgroundImage = c && c.image ? `url(${c.image})` : "";
   el.classList.toggle("speak", !!speaking);
-<<<<<<< HEAD
   el.classList.toggle("dim", !!dim);
-=======
->>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
 }
 
 /* ---------- タイトル ---------- */
@@ -57,7 +50,6 @@ $("restart").onclick = () => {
   playChapter("prologue");
 };
 
-<<<<<<< HEAD
 /* ---------- 会話(プロローグ・各章の前後・ED共通) ---------- */
 // lines の話す人は "taira" や "taira:怨"(名前に(怨)が付く)の形
 function playLines(lines, { stagger = false, onEnd }) {
@@ -76,62 +68,18 @@ function playLines(lines, { stagger = false, onEnd }) {
     setChara($("charaR"), shown[1], key === shown[1], dimOthers && key !== shown[1]);
     const name = characters[key].name;
     $("who").textContent = name && tag ? `${name}(${tag})` : name;
-=======
-/* ---------- 会話(プロローグ・チュートリアル・ボス・ED共通) ---------- */
-
-/* ---------- 会話(プロローグ・チュートリアル・ボス・ED共通) ---------- */
-function playChapter(id) {
-  const ch = chapters[id];
-  const speakers = [...new Set(ch.lines.map(l => l[0]))];
-  const visibleSpeakers = speakers.filter(s => s !== "player");
-  let i = 0;
-
-  $("dialogStage").classList.toggle(
-    "stagger",
-    id === "sawara1" || id === "sawara2"
-  );
-
-  const render = () => {
-    const [who, text] = ch.lines[i];
-
-    // 主人公以外のキャラクターを表示
-    setChara(
-      $("charaL"),
-      visibleSpeakers[0],
-      who === visibleSpeakers[0]
-    );
-
-    setChara(
-      $("charaR"),
-      visibleSpeakers[1],
-      who === visibleSpeakers[1]
-    );
-
-    // 主人公の名前は表示しない
-    $("who").textContent =
-      who === "player" ? "" : characters[who].name;
-
->>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
     $("text").textContent = text;
   };
 
   $("textbox").onclick = () => {
-<<<<<<< HEAD
     if (++i < lines.length) return render();
     onEnd();
-=======
-    if (++i < ch.lines.length) return render();
-
-    if (ch.game) runGame(id);
-    else finishChapter(id);
->>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
   };
 
   show("dialog");
   render();
 }
 
-<<<<<<< HEAD
 // 章の会話 → ゲーム → (クリア後の会話) → 次へ
 function playChapter(id) {
   const ch = chapters[id];
@@ -143,13 +91,11 @@ function playChapter(id) {
 
 function playAfter(id) {
   playLines(chapters[id].after, {
-    stagger: id === "sawara2",
+    stagger: id === "sawara1" || id === "sawara2",
     onEnd: () => finishChapter(id)
   });
 }
 
-=======
->>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
 // 章を終えて次へ
 function finishChapter(id) {
   const ch = chapters[id];
@@ -164,15 +110,10 @@ function runGame(id) {
   if (stopGame) { stopGame(); stopGame = null; }
   show("game");
   $("gameResult").hidden = true;
-<<<<<<< HEAD
   const ch = chapters[id];
   stopGame = startGame(ch.game, $("gameBox"), result => {
     // anyResult(負けイベント)は、勝っても負けても先へ進む
     if (result === "clear" || ch.anyResult) return ch.after ? playAfter(id) : finishChapter(id);
-=======
-  stopGame = startGame(chapters[id].game, $("gameBox"), result => {
-    if (result === "clear") return finishChapter(id);
->>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
     $("resultMsg").textContent = "失敗……もう一度挑戦しますか?";
     $("gameResult").hidden = false;
     $("retryBtn").onclick = () => runGame(id);
@@ -195,10 +136,7 @@ document.addEventListener("click", e => {
   // ☰ で開閉。メニューの外を押したら閉じる
   if (e.target.closest(".menuBtn")) $("menu").hidden = !$("menu").hidden;
   else if (!e.target.closest("#menu")) $("menu").hidden = true;
-<<<<<<< HEAD
   document.querySelectorAll(".menuBtn").forEach(b => b.setAttribute("aria-expanded", String(!$("menu").hidden)));
-=======
->>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
 
   const go = e.target.closest("[data-go]")?.dataset.go;
   if (go === "title") showTitle();

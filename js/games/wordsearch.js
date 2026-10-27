@@ -1,31 +1,15 @@
-<<<<<<< HEAD
 // ワード探し「平将門の言葉さがし」(kotobaasobi.html を部品にしたもの)
-=======
-// ワード探し「菅原道真の試練」(kotobaasobi.html を部品にしたもの)
->>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
 // start(box, onFinish): box に画面を作り、全部見つけたら onFinish("clear") を呼ぶ。
 // 戻り値は、画面を離れるときに呼ぶ後始末の関数。
 
 const SIZE = 8;
 const QUESTION_COUNT = 3;
 
-<<<<<<< HEAD
 // 平将門に関係する言葉(すべて8文字以内)
 const WORD_BANK = [
   "くび", "からだ", "まさかど", "たいら", "ぶし", "ぶげい", "いくさ", "さむらい",
   "かんとう", "しんのう", "きおく", "ことば", "たましい", "むしゃ", "ほこり",
   "つわもの", "かぶと", "よろい", "ゆみや", "やいば"
-=======
-// 菅原道真・平安時代に関係する言葉(すべて8文字以内)
-const WORD_BANK = [
-  "すがわら", "みちざね", "へいあん", "へいあんきょう", "だざいふ", "てんまんぐう",
-  "きたのてんじん", "うめ", "うめのはな", "わか", "かんし", "がくもん",
-  "もんじょうはかせ", "だいがくのかみ", "さだいじん", "うだいじん", "ふじわら",
-  "えんぎ", "かんぴょう", "こうし", "きょうと", "みやこ", "ちょうてい", "きぞく",
-  "てんのう", "かんじ", "しょもつ", "ふで", "すずり", "しきし", "しきぶ", "れきし",
-  "まつり", "おまいり", "じんじゃ", "きねん", "てんじん", "うた", "ことば",
-  "しゅうじ", "こうきょ", "せいじ", "やくにん", "しんぶん"
->>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
 ];
 
 const HIRAGANA =
@@ -50,22 +34,13 @@ export function start(box, onFinish) {
 
   box.innerHTML = `
     <div class="ws">
-<<<<<<< HEAD
       <h2>平将門の言葉さがし</h2>
       <p class="sub">境内に散らばった、大切な言葉を探し出そう!</p>
-=======
-      <h2>菅原道真の試練</h2>
-      <p class="sub">平安の知識を頼りに、隠された言葉を見つけ出せ!</p>
->>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
       <p class="rules">言葉の最初と最後の文字を、順にタップ。<br>縦・横・斜め、逆向きにも隠れているぞ。</p>
       <div class="ws-words"></div>
       <div class="ws-grid"></div>
       <p class="ws-msg" aria-live="polite"></p>
-<<<<<<< HEAD
       <button class="btn ws-reset" type="button">盤面を作り直す</button>
-=======
-      <button class="btn ws-reset" type="button">新たな試練</button>
->>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
     </div>`;
 
   const q = sel => box.querySelector(sel);
@@ -208,11 +183,7 @@ export function start(box, onFinish) {
       foundCells.push(...selectedCells);
       createWordList();
       if (foundWords.length === currentWords.length) {
-<<<<<<< HEAD
         message("すべての言葉を見つけた!将門の記憶が戻っていく……");
-=======
-        message("見事!菅原道真の試練を突破しました!");
->>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
         finishTimer = setTimeout(() => onFinish("clear"), 1400); // 結果を少し見せてから次へ
       } else {
         message("正解!「" + answer + "」を見つけました!");
@@ -233,11 +204,7 @@ export function start(box, onFinish) {
     generateBoard();
     createGrid();
     createWordList();
-<<<<<<< HEAD
     message("散らばった言葉を探し出そう!");
-=======
-    message("菅原道真の試練が始まった!言葉を探せ!");
->>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
   }
 
   gridEl.onclick = e => {

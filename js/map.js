@@ -4,11 +4,7 @@
 export const pins = [
   { id: "nagaokakyu", name: "長岡宮跡", lat: 34.9443139, lng: 135.703389, chapters: ["sawara1", "sawara2"],
     info: "長岡京の中心だった宮殿の跡。大極殿の跡地が公園になっている。" },
-<<<<<<< HEAD
   { id: "takenomichi", name: "竹の径", lat: 34.956667, lng: 135.696111, chapters: ["sutoku"],
-=======
-  { id: "takenomichi", name: "竹の径", lat: 34.958918, lng: 135.688003, chapters: ["sutoku"],
->>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
     info: "竹林が続く散策路。かぐやの物語ともつながる場所。" },
   { id: "mukojinja", name: "向日神社", lat: 34.944151, lng: 135.697113, chapters: ["taira"],
     info: "古くから町を見守ってきた神社。" },

@@ -6,13 +6,8 @@ const validIds = ["prologue", ...chapterOrder, "ed"]; // 有効な章のid
 export const TOTAL = 7; // 章の数(story.js の chapters と合わせる)
 
 const initial = {
-<<<<<<< HEAD
   done: [],                                  // クリアした章のid
   cleared: false,                            // 一度でもクリアしたか
-=======
-  done: [],
-  cleared: false,
->>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
   unlockedPins: ["nagaokakyu", "mukojinja", "chiyozakura", "takenomichi"]
 };
 
@@ -26,11 +21,7 @@ function load() {
       cleared: !!saved.cleared,
       // 前のバージョンで保存された、いまは存在しない章のidは捨てる
       done: Array.isArray(saved.done) ? saved.done.filter(id => validIds.includes(id)) : base.done,
-<<<<<<< HEAD
       // 行けるピンは保存せず、いつも最新の設定を使う(古い保存データに引きずられないように)
-=======
-      // 行けるピンは保存せず、いつも最新の設定を使う
->>>>>>> 4472c297a465cf2022ecc76afdefd6d635757bcd
       unlockedPins: base.unlockedPins
     };
   } catch {
