@@ -111,3 +111,8 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 #debug button { padding: 6px 10px; border-radius: 8px; border: 1px solid #888; background: #222; font-size: 12px; }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* 主人公のセリフ中はキャラクター表示エリアを非表示 */
+.stage.player-speaking #charaL,
+.stage.player-speaking #charaR {
+  display: none;}

@@ -1,12 +1,29 @@
 // ゲームの状態を一か所で管理し、localStorage に保存する
+import { chapterOrder } from "./story.js";
+
 const KEY = "mukou-game";
+const validIds = ["prologue", ...chapterOrder, "ed"]; // 有効な章のid
 export const TOTAL = 7; // 章の数(story.js の chapters と合わせる)
+
+const initial = {
+  done: [],
+  cleared: false,
+  unlockedPins: ["nagaokakyu", "mukojinja", "chiyozakura", "takenomichi"]
+};
+
 export const state = load();
 
 function load() {
   try {
-    const saved = JSON.parse(localStorage.getItem(KEY));
-    return { ...structuredClone(initial), ...saved };
+    const saved = JSON.parse(localStorage.getItem(KEY)) ?? {};
+    const base = structuredClone(initial);
+    return {
+      cleared: !!saved.cleared,
+      // 前のバージョンで保存された、いまは存在しない章のidは捨てる
+      done: Array.isArray(saved.done) ? saved.done.filter(id => validIds.includes(id)) : base.done,
+      // 行けるピンは保存せず、いつも最新の設定を使う
+      unlockedPins: base.unlockedPins
+    };
   } catch {
     return structuredClone(initial);
   }

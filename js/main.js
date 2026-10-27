@@ -50,22 +50,45 @@ $("restart").onclick = () => {
 };
 
 /* ---------- 会話(プロローグ・チュートリアル・ボス・ED共通) ---------- */
+
+/* ---------- 会話(プロローグ・チュートリアル・ボス・ED共通) ---------- */
 function playChapter(id) {
   const ch = chapters[id];
   const speakers = [...new Set(ch.lines.map(l => l[0]))];
+  const visibleSpeakers = speakers.filter(s => s !== "player");
   let i = 0;
-  $("dialogStage").classList.toggle("stagger", id === "sawara1" || id === "sawara2");
+
+  $("dialogStage").classList.toggle(
+    "stagger",
+    id === "sawara1" || id === "sawara2"
+  );
 
   const render = () => {
     const [who, text] = ch.lines[i];
-    setChara($("charaL"), speakers[0], who === speakers[0]);
-    setChara($("charaR"), speakers[1], who === speakers[1]);
-    $("who").textContent = characters[who].name;
+
+    // 主人公以外のキャラクターを表示
+    setChara(
+      $("charaL"),
+      visibleSpeakers[0],
+      who === visibleSpeakers[0]
+    );
+
+    setChara(
+      $("charaR"),
+      visibleSpeakers[1],
+      who === visibleSpeakers[1]
+    );
+
+    // 主人公の名前は表示しない
+    $("who").textContent =
+      who === "player" ? "" : characters[who].name;
+
     $("text").textContent = text;
   };
 
   $("textbox").onclick = () => {
     if (++i < ch.lines.length) return render();
+
     if (ch.game) runGame(id);
     else finishChapter(id);
   };
