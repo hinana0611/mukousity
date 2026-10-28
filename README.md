@@ -11,13 +11,13 @@
 | 1 | 早良 | 長岡宮跡 | 弾幕・チュートリアル(`danmaku_tutorial`) |
 | 2 | 平将門 | 向日神社 | ワード探し(`wordsearch`) |
 | 3 | 菅原道真 | 千代桜天満宮 | スライドパズル(`slide_puzzle`) |
-| 4 | 崇徳上皇 | 竹の径 | 木責スライドゲーム(`bamboo_slide`) |
+| 4 | 崇徳上皇 | 竹の径 | RUN ESCAPE(`runner`) |
 | 5 | 早良 | 長岡宮跡 | 弾幕・ラスボス(`danmaku_boss`) |
 
 - 長岡宮跡は最初と最後の2回使う
 - ED後は、ホーム画面で自由に動けるモード(クリア後モード)になる
 - 「はじめから」でストーリーをやり直せる(クリア記録は残る)
-- ゲームは `js/games.js` に登録する。**ワード探し(平将門)は完成**(`js/games/wordsearch.js`)。ほかは仮(クリア/失敗ボタンのみ)
+- ゲームは `js/games.js` に登録する。**5本とも本物が入っている**(下の「ミニゲーム」参照)
 - 資料館のピンはストーリーでは使わず、クリア後の解説用
 
 ## ファイル構成
@@ -30,7 +30,12 @@ js/state.js   状態管理
 js/story.js   ストーリー・進捗
 js/map.js     マップ・ピン
 js/games.js   ミニゲームの入口(start(container, onFinish) の形で登録)
-js/games/wordsearch.js  ワード探し(菅原道真の試練)
+js/games/kit.js               弾幕・ランナー共通の土台(操作・ループ・後始末)
+js/games/danmaku_tutorial.js  第一章の弾幕(負けイベント)
+js/games/wordsearch.js        第二章のワード探し(平将門)
+js/games/slide_puzzle.js      第三章のスライドパズル(菅原道真・記憶の絵鏡)
+js/games/runner.js            第四章のRUN ESCAPE(崇徳上皇)
+js/games/danmaku_boss.js      最終章のラスボス弾幕
 js/chat.js    AI会話(別実装・後から組み込み)
 ```
 
@@ -95,6 +100,21 @@ js/chat.js    AI会話(別実装・後から組み込み)
 - `mode`: `story`(進捗に沿った会話) / `free`(クリア後の自由会話)
 - 最初は固定の返事を返すダミー実装にする
 - 本物のAIにするときは中継サーバー(Cloudflare Workers、Vercel など)を挟み、**APIキーをブラウザ側のコードやリポジトリに入れない**(リポジトリは公開のため)
+
+## ミニゲーム
+
+どのゲームも `start(box, onFinish)` の形。終わったら `onFinish("clear")` か `onFinish("fail")` を呼び、戻り値の関数で後始末する。
+
+| ゲーム | 元のファイル | 操作 | 結果 |
+| --- | --- | --- | --- |
+| 弾幕(チュートリアル) | `index.html` | 十字ボタン / 画面ドラッグ / 矢印・WASD | 必ず fail(負けイベント。進む) |
+| ワード探し | `kotobaasobi.html` | タップ | 全部見つけて clear |
+| スライドパズル | `main_1.cpp`(4×4パズル) | タップ | 完成で clear |
+| RUN ESCAPE | `main.cpp` | 画面タップ / JUMPボタン / スペース | 60秒で clear、ぶつかると fail |
+| 弾幕(ラスボス) | `index2_1.html` | 十字ボタン / 画面ドラッグ / 矢印 | ボスHP0で clear、自機HP0で fail |
+
+- スライドパズルの絵は、いまはプログラムで描いた仮のもの。`js/games/slide_puzzle.js` の `PICTURE_URL` に画像のパスを書くと差し替わる
+- 混ぜる回数は `SCRAMBLE_DEPTH`(スライドパズル)で調整できる
 
 ## クリア後モード
 

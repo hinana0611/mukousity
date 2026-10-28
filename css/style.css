@@ -97,6 +97,33 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 #gameResult { position: absolute; inset: 0; z-index: 1500; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: rgba(15,27,45,.92); }
 #gameResult[hidden] { display: none; }
 
+/* 弾幕・ランナー(js/games/kit.js) */
+.dm { width: 100%; max-width: 460px; text-align: center; }
+.dm-title { margin: 0; font-size: 18px; color: var(--moon); }
+.dm-info { display: flex; justify-content: space-between; font-size: 14px; }
+.dm-msg { min-height: 1.7em; color: #ff8a8a; font-weight: 700; }
+.dm-canvas { display: block; width: 100%; height: auto; background: #000; border: 2px solid var(--line); border-radius: 8px; touch-action: none; }
+.dm-pad { display: grid; grid-template-columns: repeat(3, 56px); grid-auto-rows: 56px; width: 168px; margin: 8px auto 0; touch-action: none; }
+.dm-pad button { width: 56px; height: 56px; padding: 0; font-size: 24px; font-weight: 700; border: 2px solid var(--line); border-radius: 10px; background: var(--panel); touch-action: none; user-select: none; -webkit-user-select: none; }
+.dm-pad button:active { background: #3b4f73; }
+.dm-jump { width: 100%; margin-top: 10px; min-height: 56px; font-size: 20px; touch-action: none; }
+
+/* スライドパズル */
+.sp { width: 100%; max-width: 420px; text-align: center; }
+.sp h2 { margin: 0; color: var(--moon); font-size: 22px; }
+.sp .sub { margin: 4px 0 0; color: var(--bamboo); font-size: 13px; }
+.sp-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; width: min(100%, 340px); aspect-ratio: 1; margin: 12px auto 6px; padding: 3px; background: #0b1424; border: 2px solid var(--line); border-radius: 10px; }
+.sp-board.solved { gap: 0; border-color: var(--moon); }
+.sp-tile { position: relative; min-width: 0; padding: 0; border: 0; border-radius: 4px; background-repeat: no-repeat; }
+.sp-board.solved .sp-tile { border-radius: 0; }
+.sp-tile.empty { background: #0b1424; cursor: default; }
+.sp-n { position: absolute; left: 4px; top: 2px; font-size: 12px; font-weight: 700; color: #fff; text-shadow: 0 0 3px #000; opacity: .85; }
+.sp-board.solved .sp-n { display: none; }
+.sp-info { margin: 0; font-size: 14px; }
+.sp-msg { min-height: 1.8em; margin: 4px 0; color: var(--moon); font-weight: 700; }
+.sp-btns { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.sp-btns .btn { padding: 0 16px; font-size: 14px; }
+
 /* ワード探し */
 .ws { width: 100%; max-width: 420px; text-align: center; }
 .ws h2 { margin: 0; color: var(--moon); font-size: 22px; }

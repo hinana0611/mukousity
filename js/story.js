@@ -83,9 +83,9 @@ export const chapters = {
     ]
   },
 
-  // 第四章:崇徳上皇(竹の径・木責スライドゲーム)
+  // 第四章:崇徳上皇(竹の径・RUN ESCAPE)
   sutoku: {
-    game: "bamboo_slide", next: "home",
+    game: "runner", next: "home",
     lines: [
       ["sutoku:怨", "私なんて……私なんて生まれてこなきゃよかったのよ！！ 人間も歴史も、みんな嫌い……！！"],
       ["hero", "自分で自分を責めて縛り付けてるんだ！ 竹の木責パズルを解いて解放しよう！"]
