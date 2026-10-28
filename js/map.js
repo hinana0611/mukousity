@@ -2,15 +2,15 @@
 // ※座標はおおよその位置です。地図で確認して調整してください。
 // chapters … そのピンで始まる章(長岡宮跡は最初と最後の2回)。空 [] はストーリーに使わないピン
 export const pins = [
-  { id: "nagaokakyu", name: "長岡宮跡", lat: 34.9443139, lng: 135.703389, chapters: ["sawara1", "sawara2"],
+  { id: "nagaokakyu", name: "長岡宮跡", lat: 34.943139, lng: 135.703389, chapters: ["sawara1", "sawara2"],
     info: "長岡京の中心だった宮殿の跡。大極殿の跡地が公園になっている。" },
-  { id: "takenomichi", name: "竹の径", lat: 34.956667, lng: 135.696111, chapters: ["sutoku"],
+  { id: "takenomichi", name: "竹の径", lat: 34.949028, lng: 135.688806, chapters: ["sutoku"],
     info: "竹林が続く散策路。かぐやの物語ともつながる場所。" },
-  { id: "mukojinja", name: "向日神社", lat: 34.944151, lng: 135.697113, chapters: ["taira"],
+  { id: "mukojinja", name: "向日神社", lat: 34.945860, lng: 135.700147, chapters: ["taira"],
     info: "古くから町を見守ってきた神社。" },
-  { id: "chiyozakura", name: "千代桜天満宮", lat: 34.9561, lng: 135.6951, chapters: ["sugawara"],
+  { id: "chiyozakura", name: "千代櫻天満宮", lat: 34.949020, lng: 135.706170, chapters: ["sugawara"],
     info: "学問の神様・菅原道真を祀る天満宮。" },
-  { id: "shiryokan", name: "資料館", lat: 34.9490, lng: 135.6995, chapters: [],
+  { id: "shiryokan", name: "資料館", lat: 34.959098, lng: 135.686979, chapters: [],
     info: "向日市の歴史や出土品を紹介する資料館。(ストーリーには使わず、クリア後の解説用)" }
 ];
 
