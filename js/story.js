@@ -1,7 +1,12 @@
-// キャラクター(画像ができたら image に "img/kaguya.png" のように指定)
+// キャラクター(画像ができたら image に "img/kaguya_normal.webp" のように指定)
+//   元の大きな画像(image/ フォルダ)は重いので、小さくした img/ フォルダの .webp を使う
 //   hidden: true … 画面には映さない(主人公・地の文など)。名前だけ会話欄に出る
 export const characters = {
-  kaguya: { name: "かぐや", initial: "か", image: "" },
+  // poses … 表情ちがいの画像。セリフの中身に合わせて main.js の poseFor() が選ぶ
+  kaguya: {
+    name: "かぐや", initial: "か", image: "img/kaguya_normal.webp",
+    poses: { normal: "img/kaguya_normal.webp", laugh: "img/kaguya_laugh.webp", think: "img/kaguya_think.webp" }
+  },
   sawara: { name: "早良親王", initial: "早", image: "" },
   taira: { name: "平将門", initial: "平", image: "" },
   sugawara: { name: "菅原道真", initial: "菅", image: "" },

@@ -1,7 +1,7 @@
 // 弾幕ゲーム「ラスボス戦」(最終章・早良親王)
 // 3つの形態(HPの70%・40%で切り替わる)と、約10秒ごとの横一列攻撃。ボスを倒せばクリア、プレイヤーHPが0で失敗。
 // start(box, onFinish, opts): onFinish("clear" | "fail")。opts.bossHp はテスト用。戻り値は後始末の関数。
-import { createStage } from "./kit.js";
+import { createStage, makeNightSky, drawOnryo, drawOrb, drawPetal, drawHeart, drawBar, drawBigText } from "./kit.js";
 
 export function start(box, onFinish, opts = {}) {
   const s = createStage(box, { title: "ラスボス戦", left: "HP: 10", right: "ボスHP: 500" });
@@ -175,55 +175,49 @@ export function start(box, onFinish, opts = {}) {
   }
 
   /* ----- 描画 ----- */
-  const circle = (x, y, r, color) => { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); };
 
+  // 見た目(当たり判定は上の数字のまま。絵だけ、かわいく描く)
+  const sky = makeNightSky(canvas.width, canvas.height, { tint: "#3a1850" });
+  // 形態ごとの色: 1 むらさきのオーラ → 2 だいだい(炎) → 3 まっ赤(本気)
+  const PHASE_LOOK = {
+    1: { body: "#f1e9ff", shade: "#5c4486", aura: "rgba(130, 50, 210, .55)" },
+    2: { body: "#fff0e6", shade: "#8a4a3a", aura: "rgba(230, 110, 30, .55)", rage: true },
+    3: { body: "#ffe9ec", shade: "#7a1f35", aura: "rgba(220, 10, 40, .7)", rage: true }
+  };
   function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    sky(ctx);
 
-    // ボス
+    // ボス: 早良親王の怨霊(長い黒髪・赤く光る目・人魂)
     const phase = getBossPhase();
-    circle(enemy.x, enemy.y, enemy.size / 2, phase === 1 ? "#a020f0" : phase === 2 ? "#ff8800" : "#ff2020");
-    ctx.beginPath(); ctx.arc(enemy.x, enemy.y, enemy.size / 2 + 8, 0, Math.PI * 2);
-    ctx.strokeStyle = "white"; ctx.lineWidth = 3; ctx.stroke();
-    circle(enemy.x, enemy.y, enemy.size / 5, "white");
+    drawOnryo(ctx, enemy.x, enemy.y, enemy.size / 2 + 6, { ...PHASE_LOOK[phase], frame });
 
     // ボスHPバー
     const bw = 500, bx = (canvas.width - bw) / 2;
-    ctx.fillStyle = "#333"; ctx.fillRect(bx, 20, bw, 15);
-    ctx.fillStyle = "#ff3030"; ctx.fillRect(bx, 20, bw * Math.max(0, enemy.hp / enemy.maxHp), 15);
-    ctx.strokeStyle = "white"; ctx.lineWidth = 1; ctx.strokeRect(bx, 20, bw, 15);
+    drawBar(ctx, bx, 18, bw, 16, enemy.hp / enemy.maxHp, ["#ff6f91", "#ffb36b"]);
 
-    playerBullets.forEach(b => circle(b.x, b.y, b.size, "cyan"));
-    enemyBullets.forEach(b => circle(b.x, b.y, b.size,
-      b.horizontal ? "#ff3333" : b.type === 1 ? "#ff66cc" : b.type === 2 ? "#ffff33" : "#ff2222"));
+    playerBullets.forEach(b => drawPetal(ctx, b.x, b.y, b.size));
+    enemyBullets.forEach(b => drawOrb(ctx, b.x, b.y, b.size,
+      b.horizontal ? "#ff2a4a" : b.type === 1 ? "#c04cff" : b.type === 2 ? "#ffb02e" : "#ff3f6e"));
 
-    // プレイヤー(無敵中は点滅)
+    // 自分(ハート。無敵中は点滅して、まわりに輪)
     if (!(invincibleTimer > 0 && Math.floor(blinkTimer / 6) % 2 === 0)) {
-      circle(player.x, player.y, player.size, "cyan");
+      drawHeart(ctx, player.x, player.y, player.size * 1.5);
       if (invincibleTimer > 0) {
-        ctx.beginPath(); ctx.arc(player.x, player.y, player.size + 5, 0, Math.PI * 2);
-        ctx.strokeStyle = "white"; ctx.lineWidth = 2; ctx.stroke();
+        ctx.beginPath(); ctx.arc(player.x, player.y, player.size + 9, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.lineWidth = 2; ctx.stroke();
       }
     }
 
     // 横攻撃の警告
     if (hWarning) {
       const top = hTargetY - 20;
-      ctx.fillStyle = "rgba(255, 0, 0, 0.20)"; ctx.fillRect(0, top, canvas.width, 40);
-      ctx.fillStyle = "red"; ctx.fillRect(0, top, canvas.width, 2); ctx.fillRect(0, top + 38, canvas.width, 2);
-      ctx.font = "bold 28px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText("!!!", canvas.width / 2, hTargetY);
-      ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "rgba(255, 90, 122, 0.22)"; ctx.fillRect(0, top, canvas.width, 40);
+      ctx.fillStyle = "#ff5a7a"; ctx.fillRect(0, top, canvas.width, 2); ctx.fillRect(0, top + 38, canvas.width, 2);
+      drawBigText(ctx, "!!!", canvas.width / 2, hTargetY, 28, "#ffffff", "#ff5a7a");
     }
 
     // フェーズ表示
-    if (phaseMessageTimer > 0) {
-      ctx.font = "bold 50px sans-serif"; ctx.fillStyle = "white"; ctx.textAlign = "center";
-      ctx.fillText(phaseMessage, canvas.width / 2, canvas.height / 2);
-      ctx.textAlign = "left";
-    }
+    if (phaseMessageTimer > 0) drawBigText(ctx, phaseMessage, canvas.width / 2, canvas.height / 2, 50);
   }
 
   info();

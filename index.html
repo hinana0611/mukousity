@@ -10,11 +10,11 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://huggingface.co" crossorigin>
 <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&family=Great+Vibes&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
 <script>
   // ★ ファイルを更新したら、この数字を1つ上げる(スマホが前のファイルを使い続けないようにする)
-  window.APP_VERSION = "3";
+  window.APP_VERSION = "12";
 
   // CSS に ?v=数字 を付ける
   const css = document.createElement("link");
@@ -26,7 +26,7 @@
   // ※ js フォルダに新しい .js ファイルを足したら、ここにも書き足す
   const files = ["main", "state", "story", "map", "chat", "games",
     "games/kit", "games/wordsearch", "games/danmaku_tutorial", "games/danmaku_boss",
-    "games/slide_puzzle", "games/runner"];
+    "games/slide_puzzle", "games/runner", "typer"];
   const imports = {};
   files.forEach(f => { imports["./js/" + f + ".js"] = "./js/" + f + ".js?v=" + window.APP_VERSION; });
   const map = document.createElement("script");
@@ -37,16 +37,20 @@
 </head>
 <body>
 <div id="app">
+  <!-- 舞い散る桜の花びら(飾り。css/style.css の .petals) -->
+  <div class="petals" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
  
   <!-- タイトル -->
   <section class="screen" id="title">
     <h1>Mukou City with Kaguya</h1>
+    <p class="sub">月下怨響録</p>
     <div class="stage solo"><div class="chara big" id="titleChara"></div></div>
     <div class="actions">
       <button class="btn main" id="start">ゲームstart</button>
       <button class="btn" id="restart" hidden>はじめから</button>
     </div>
     <p class="ver" id="ver"></p>
+    <button type="button" class="dbgToggle" id="dbgToggle">デバッグモード: OFF</button>
   </section>
  
   <!-- 会話(プロローグ・チュートリアル・ボス・EDで共通) -->
@@ -56,9 +60,21 @@
       <div class="chara" id="charaR"></div>
     </div>
     <div class="textbox" id="textbox">
-      <div id="who"></div>
+      <!-- 上の段: 話す人の名前(左)と、ログ・スキップ(右)。文字と重ならないように同じ段に並べる -->
+      <div class="tbHead">
+        <div id="who"></div>
+        <div class="tbBtns">
+          <button type="button" class="tbBtn" id="logBtn">ログ</button>
+          <button type="button" class="tbBtn" id="skipBtn">スキップ ≫</button>
+        </div>
+      </div>
       <p id="text"></p>
-      <span class="tap">タップで次へ</span>
+      <span class="tap" id="dialogMore">タップで次へ ▼</span>
+    </div>
+    <!-- ログ(この場面で出たセリフの読み返し)。どこを押しても閉じる -->
+    <div id="log" hidden>
+      <div id="logList"></div>
+      <p class="logClose">タップで閉じる</p>
     </div>
   </section>
  
@@ -91,6 +107,7 @@
  
   <!-- ミニゲーム(中身は js/games.js) -->
   <section class="screen" id="game">
+    <div class="gamebar"><button type="button" class="gameQuit" id="quitGame">✕ やめる</button></div>
     <div id="gameBox"></div>
     <div id="gameResult" hidden>
       <p id="resultMsg"></p>
@@ -108,9 +125,16 @@
       <span class="label" id="chatTitle">会話</span>
     </div>
     <div class="stage solo"><div class="chara big" id="chatChara"></div></div>
+    <!-- 1行目: 話す人の名前 / 2行目から: 返事。枠の大きさは固定で、入りきらないときはタップで次のページへ -->
     <div class="textbox" id="chatBox">
       <div id="chatWho"></div>
       <p id="chatText"></p>
+      <span class="tap" id="chatMore" hidden>タップで続き ▼</span>
+    </div>
+    <!-- はじめて会話を開いたとき: AIのデータをダウンロードしてよいか -->
+    <div class="consent" id="chatConsent" hidden>
+      <button class="btn main" id="aiYes">ダウンロードして話す</button>
+      <button class="btn" id="aiNo">かんたんモード</button>
     </div>
     <div class="inputrow">
       <input id="msg" type="text" placeholder="メッセージを入力" autocomplete="off">
@@ -127,10 +151,14 @@
   </nav>
  
   <!-- デバッグ(URLの末尾に ?debug=1 を付けると表示) -->
+  <!-- ふだんは右はしの小さな🛠だけ。押すとボタンが開く(画面のじゃまにならないように) -->
   <div id="debug" hidden>
-    <button data-dbg="skip">次の章へ</button>
-    <button data-dbg="clear">クリア済みにする</button>
-    <button data-dbg="reset">全リセット</button>
+    <button type="button" class="dbgTab" data-dbg="toggle" aria-label="デバッグメニュー" aria-expanded="false">🛠</button>
+    <div class="dbgMenu" id="dbgMenu" hidden>
+      <button data-dbg="skip">次の章へ</button>
+      <button data-dbg="clear">クリア済みにする</button>
+      <button data-dbg="reset">全リセット</button>
+    </div>
   </div>
 </div>
  

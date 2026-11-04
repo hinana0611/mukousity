@@ -1,7 +1,7 @@
 // 弾幕ゲーム「チュートリアル戦」(第一章・早良親王の負けイベント)
 // 敵のHPを半分まで減らすと、避けられない特殊攻撃で必ず負ける。負けても物語は進む。
 // start(box, onFinish): 終わったら onFinish("fail") を呼ぶ。戻り値は後始末の関数。
-import { createStage } from "./kit.js";
+import { createStage, makeNightSky, drawOnryo, drawOrb, drawPetal, drawHeart, drawBar } from "./kit.js";
 
 export function start(box, onFinish) {
   const s = createStage(box, { title: "チュートリアル戦", left: "HP: 3", right: "SCORE: 0" });
@@ -131,23 +131,20 @@ export function start(box, onFinish) {
     if (frame % 10 === 0 && !defeatEvent) shootPlayer();
   }
 
-  const circle = (x, y, r, color) => { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); };
-
+  // 見た目(当たり判定は上の数字のまま。絵だけ、かわいく描く)
+  const sky = makeNightSky(canvas.width, canvas.height);
   function draw() {
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    // 敵
-    circle(enemy.x, enemy.y, enemy.size, defeatEvent ? "purple" : "red");
-    circle(enemy.x - 13, enemy.y - 8, 6, "white");
-    circle(enemy.x + 13, enemy.y - 8, 6, "white");
-    ctx.fillStyle = "gray"; ctx.fillRect(enemy.x - 50, enemy.y - 60, 100, 10);
-    ctx.fillStyle = "lime"; ctx.fillRect(enemy.x - 50, enemy.y - 60, 100 * (enemy.hp / enemy.maxHp), 10);
-    // プレイヤー
-    circle(player.x, player.y, player.size, "cyan");
-    circle(player.x, player.y, 3, "white");
-    // 弾
-    playerBullets.forEach(b => circle(b.x, b.y, b.size, "yellow"));
-    enemyBullets.forEach(b => circle(b.x, b.y, b.size, b.special ? "#ff2222" : "pink"));
+    sky(ctx);
+    // 敵: 早良親王の怨霊(長い黒髪・赤い目)。特殊攻撃の前は、むらさきのオーラで、もっと怒る
+    drawOnryo(ctx, enemy.x, enemy.y, enemy.size, defeatEvent
+      ? { body: "#f1e6ff", shade: "#5a3a8a", aura: "rgba(140, 40, 220, .65)", frame, rage: true }
+      : { body: "#f6eef4", shade: "#7a5a7a", aura: "rgba(180, 20, 60, .5)", frame });
+    drawBar(ctx, enemy.x - 55, enemy.y - enemy.size - 26, 110, 12, enemy.hp / enemy.maxHp);
+    // 自分の弾(桜の花びら)と、敵の弾(光る玉)
+    playerBullets.forEach(b => drawPetal(ctx, b.x, b.y, b.size));
+    enemyBullets.forEach(b => drawOrb(ctx, b.x, b.y, b.size, b.special ? "#9b3cff" : "#ff3f6e"));
+    // 自分(ハート)
+    drawHeart(ctx, player.x, player.y, player.size * 1.5);
   }
 
   info();

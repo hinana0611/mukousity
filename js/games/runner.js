@@ -2,7 +2,7 @@
 // 1ボタンで走って、2段ジャンプで障害物をよける。60秒生き延びればクリア。
 // 操作: 画面タップ / JUMPボタン / スペース・↑キー
 // start(box, onFinish, opts): onFinish("clear" | "fail")。opts.clearTime はテスト用。戻り値は後始末の関数。
-import { createStage } from "./kit.js";
+import { createStage, roundRectPath, drawBigText } from "./kit.js";
 
 const W = 960, H = 540, GROUND_Y = 450;
 const CEILING_TARGET_Y = 135, CEILING_THICKNESS = 15, CEILING_DROP_SPEED = 180, CEILING_BOUNCE_SPEED = 950;
@@ -131,38 +131,139 @@ export function start(box, onFinish, opts = {}) {
 
   /* ----- 描画 ----- */
   const mmss = t => String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(Math.floor(t % 60)).padStart(2, "0");
-  const COLORS = { normal: "rgb(220,50,50)", high: "rgb(190,40,40)", long: "rgb(230,120,30)" };
+
+  // 竹林の背景(遠い竹・近い竹の2まい)。最初に1回だけ描いておき、横にずらして貼る(軽い)
+  function makeBamboo(count, color, nodeColor, minW, maxW, alpha, seed) {
+    const c = document.createElement("canvas");
+    c.width = W; c.height = H;
+    const g = c.getContext("2d");
+    let a = seed;
+    const r = () => ((a = (a * 9301 + 49297) % 233280) / 233280);
+    g.globalAlpha = alpha;
+    for (let i = 0; i < count; i++) {
+      const x = r() * W, w = minW + r() * (maxW - minW);
+      g.fillStyle = color; g.fillRect(x, 0, w, GROUND_Y);
+      g.fillStyle = nodeColor;
+      for (let y = 30 + r() * 60; y < GROUND_Y; y += 70 + r() * 30) g.fillRect(x - 1, y, w + 2, 4); // 竹のふし
+      // 葉っぱ
+      g.fillStyle = color;
+      for (let k = 0; k < 3; k++) {
+        const ly = 20 + r() * 200, dir = r() < 0.5 ? -1 : 1;
+        g.beginPath(); g.ellipse(x + w / 2 + dir * 22, ly, 24, 6, dir * 0.5, 0, Math.PI * 2); g.fill();
+      }
+    }
+    return c;
+  }
+  const farBamboo = makeBamboo(14, "#cfe9d3", "#b9dcc0", 14, 22, 0.7, 7);
+  const nearBamboo = makeBamboo(7, "#a9d9b4", "#8fc89c", 22, 34, 0.75, 21); // 背景はうすめ(障害物を見やすく)
+  const scrollLayer = (img, offset) => {
+    const x = -(offset % W);
+    ctx.drawImage(img, x, 0);
+    ctx.drawImage(img, x + W, 0);
+  };
+
+  // 障害物: 地面からは竹の切り株、天井からは、むらさきのおばけ
+  function drawStump(o) {
+    const g = ctx.createLinearGradient(o.x, 0, o.x + o.w, 0);
+    const base = o.kind === "long" ? ["#e9b16b", "#c9803f"] : o.kind === "high" ? ["#5fae74", "#3c8752"] : ["#7cc98f", "#4f9e66"];
+    g.addColorStop(0, base[0]); g.addColorStop(1, base[1]);
+    roundRectPath(ctx, o.x, o.y, o.w, o.h, 10);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.strokeStyle = o.kind === "long" ? "#8a4f22" : "#24603a"; ctx.lineWidth = 4; ctx.stroke(); // こいふちで、背景の竹と見分ける
+    ctx.fillStyle = "rgba(0,0,0,.12)"; // ふし
+    for (let y = o.y + 28; y < o.y + o.h - 8; y += 30) ctx.fillRect(o.x + 3, y, o.w - 6, 4);
+    ctx.fillStyle = o.kind === "long" ? "#ffe2b0" : "#e6f7d9"; // 切り口
+    ctx.beginPath(); ctx.ellipse(o.x + o.w / 2, o.y + 6, o.w / 2 - 4, 6, 0, 0, Math.PI * 2); ctx.fill();
+  }
+  function drawCeilingGhost(o) {
+    // 天井からたれ下がる怨霊: 黒い髪のすだれの下から、赤い目がのぞく
+    const g = ctx.createLinearGradient(0, o.y, 0, o.y + o.h);
+    g.addColorStop(0, "#2a1838"); g.addColorStop(1, "#6a4a8a");
+    roundRectPath(ctx, o.x, o.y - 10, o.w, o.h + 10, 14);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.strokeStyle = "#1a0f24"; ctx.lineWidth = 4; ctx.stroke();
+    // 髪の毛先(下のはしをギザギザに)
+    ctx.fillStyle = "#120a1a";
+    ctx.beginPath(); ctx.moveTo(o.x, o.y + o.h - 30);
+    for (let x = o.x; x <= o.x + o.w; x += 12) ctx.lineTo(x + 6, o.y + o.h - 14 + ((x / 12) % 2) * 8), ctx.lineTo(x + 12, o.y + o.h - 30);
+    ctx.lineTo(o.x + o.w, o.y - 10); ctx.lineTo(o.x, o.y - 10); ctx.closePath(); ctx.fill();
+    // 赤く光る目
+    const cx = o.x + o.w / 2, cy = o.y + o.h - 38;
+    for (const dx of [-11, 11]) {
+      const eg = ctx.createRadialGradient(cx + dx, cy, 0, cx + dx, cy, 12);
+      eg.addColorStop(0, "rgba(255,60,80,.9)"); eg.addColorStop(1, "rgba(255,0,40,0)");
+      ctx.fillStyle = eg; ctx.beginPath(); ctx.arc(cx + dx, cy, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#ff2a48"; ctx.beginPath(); ctx.ellipse(cx + dx, cy, 6, 3, dx < 0 ? 0.4 : -0.4, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  // 自分: 桜色の着物の、ちびキャラ(当たり判定は player.w × player.h の四角のまま)
+  function drawRunner(p) {
+    const cx = p.x + p.w / 2, inAir = p.jumps > 0;
+    // 着物
+    roundRectPath(ctx, p.x + 2, p.y + 26, p.w - 4, p.h - 26, 10);
+    ctx.fillStyle = "#f28aa8"; ctx.fill();
+    ctx.fillStyle = "#f2d479"; ctx.fillRect(p.x + 4, p.y + 38, p.w - 8, 5); // 帯
+    // 髪(うしろ)
+    ctx.fillStyle = "#f5a3bb";
+    ctx.beginPath(); ctx.ellipse(cx - 6, p.y + 26, 16, 20, 0, 0, Math.PI * 2); ctx.fill();
+    // 顔
+    ctx.fillStyle = "#ffeadf";
+    ctx.beginPath(); ctx.arc(cx, p.y + 16, 15, 0, Math.PI * 2); ctx.fill();
+    // 前髪
+    ctx.fillStyle = "#f5a3bb";
+    ctx.beginPath(); ctx.arc(cx, p.y + 12, 16, Math.PI * 1.05, Math.PI * 1.95); ctx.fill();
+    // 目(ジャンプ中はにっこり)
+    ctx.strokeStyle = ctx.fillStyle = "#3a2350"; ctx.lineWidth = 2.5; ctx.lineCap = "round";
+    for (const dx of [-5, 7]) {
+      if (inAir) { ctx.beginPath(); ctx.arc(cx + dx, p.y + 18, 3, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke(); }
+      else { ctx.beginPath(); ctx.ellipse(cx + dx, p.y + 17, 2.2, 3.2, 0, 0, Math.PI * 2); ctx.fill(); }
+    }
+    ctx.fillStyle = "rgba(255,120,160,.55)";
+    ctx.beginPath(); ctx.ellipse(cx - 9, p.y + 22, 3.5, 2, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(cx + 11, p.y + 22, 3.5, 2, 0, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // 左上・右上の文字(丸いラベルの上に)
+  function pill(text, x, y, align) {
+    ctx.font = 'bold 26px "Zen Maru Gothic", "Hiragino Maru Gothic ProN", sans-serif';
+    const w = ctx.measureText(text).width + 28, left = align === "right" ? x - w : x;
+    roundRectPath(ctx, left, y, w, 40, 20);
+    ctx.fillStyle = "rgba(255,255,255,.82)"; ctx.fill();
+    ctx.strokeStyle = "#f5a3bb"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = "#7a2d4a"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    ctx.fillText(text, left + 14, y + 21);
+  }
 
   function draw() {
-    ctx.fillStyle = "rgb(235,240,245)"; ctx.fillRect(0, 0, W, H);
-    if (gameTime >= 30) { ctx.fillStyle = "rgb(60,60,70)"; ctx.fillRect(0, ceilingY, W, CEILING_THICKNESS); }
-    ctx.fillStyle = "rgb(50,50,50)"; ctx.fillRect(0, GROUND_Y, W, 12);
-
-    for (const o of obstacles) {
-      ctx.fillStyle = o.type === "ceiling" ? "rgb(170,50,210)" : COLORS[o.kind];
-      ctx.fillRect(o.x, o.y, o.w, o.h);
+    // 空 → 竹林(遠い竹はゆっくり、近い竹は速く流れる)
+    const sky = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+    sky.addColorStop(0, "#fff0f5"); sky.addColorStop(1, "#e3f4e6");
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    scrollLayer(farBamboo, gameTime * 90);
+    scrollLayer(nearBamboo, gameTime * 220);
+    // 天井(30秒から)
+    if (gameTime >= 30) {
+      roundRectPath(ctx, -10, ceilingY, W + 20, CEILING_THICKNESS, 6);
+      ctx.fillStyle = "#8a5a3c"; ctx.fill();
     }
-    ctx.fillStyle = "rgb(50,100,255)";
-    ctx.fillRect(player.x, player.y, player.w, player.h);
+    // 地面(草と土)
+    ctx.fillStyle = "#9b6b4a"; ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+    ctx.fillStyle = "#7cc98f"; ctx.fillRect(0, GROUND_Y, W, 12);
 
-    ctx.font = "bold 28px Arial, sans-serif";
-    ctx.textBaseline = "top";
+    for (const o of obstacles) (o.type === "ceiling" ? drawCeilingGhost : drawStump)(o);
+    drawRunner(player);
+
     if (state === "playing") {
-      ctx.fillStyle = "rgb(20,20,20)";
-      ctx.textAlign = "left";
-      ctx.fillText("TIME  " + mmss(gameTime) + " / " + mmss(CLEAR_TIME), 30, 25);
-      ctx.fillText("JUMP " + (2 - player.jumps), 30, 65);
-      ctx.textAlign = "right";
-      ctx.fillText("LEVEL " + getLevel(gameTime), W - 30, 25);
+      pill("⏱ " + mmss(gameTime) + " / " + mmss(CLEAR_TIME), 24, 20);
+      pill("ジャンプ " + "●".repeat(2 - player.jumps) + "○".repeat(player.jumps), 24, 68);
+      pill("LEVEL " + getLevel(gameTime), W - 24, 20, "right");
     } else {
-      ctx.fillStyle = state === "over" ? "rgba(150,0,0,0.67)" : "rgba(0,150,70,0.67)";
+      ctx.fillStyle = state === "over" ? "rgba(90, 30, 70, .6)" : "rgba(255, 190, 210, .6)";
       ctx.fillRect(0, 0, W, H);
-      ctx.fillStyle = "white";
-      ctx.textAlign = "center";
-      ctx.font = "bold 52px Arial, sans-serif";
-      ctx.fillText(state === "over" ? "GAME OVER" : "GAME CLEAR!", W / 2, 190);
-      ctx.font = "bold 28px Arial, sans-serif";
-      ctx.fillText("TIME  " + mmss(gameTime), W / 2, 270);
+      drawBigText(ctx, state === "over" ? "GAME OVER" : "GAME CLEAR!", W / 2, 210, 56,
+        "#ffffff", state === "over" ? "#8a4fc9" : "#e86f8c");
+      drawBigText(ctx, "TIME  " + mmss(gameTime), W / 2, 290, 30, "#ffffff", "#7a2d4a");
     }
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
@@ -174,7 +275,7 @@ export function start(box, onFinish, opts = {}) {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "btn main dm-jump";
-  btn.textContent = "JUMP";
+  btn.textContent = "ジャンプ！";
   btn.addEventListener("pointerdown", e => { e.preventDefault(); jump(); });
   s.root.appendChild(btn);
 

@@ -22,8 +22,17 @@ const RULE_DIRS = ["", `${KNOWLEDGE_DIR}/`]; // system_rule.txt は index.html �
 // 物集女車塚古墳のファイル名は、2通りの書き方に対応
 const KURUMAZUKA = ["motosume_kurumazuka.txt", "mozumekurumaduka_kofun.txt"];
 
+// 一緒に渡す知識の、文字数の上限。多すぎるとAIが一度に読める量(約4000トークン)を超えて、返事ができなくなる
+const MAX_EXTRA_CHARS = 1800;
+
 // 質問に含まれる言葉 → 一緒に渡す知識ファイル(配列の中は「どれか1つ見つかれば良い」別名)
+// 上限があるので、くわしい言葉(大極殿など)を先に、広い言葉(長岡京など)をあとに書く
 const RULES = [
+  { re: /大極殿/, files: ["daigokuden.txt"] },
+  { re: /朝堂院/, files: ["choudoin.txt"] },
+  { re: /東院公園/, files: ["higaiin.txt"] },
+  { re: /寺戸大塚/, files: ["terado_otsuka.txt"] },
+  { re: /物集女車塚/, files: [KURUMAZUKA] },
   { re: /神社|向日神社|お参り/, files: ["shrine.txt"] },
   { re: /竹|竹の径|かぐや姫|竹取物語/, files: ["takenomichi.txt"] },
   { re: /城|物集女城/, files: ["mozumejo.txt"] },
@@ -32,12 +41,8 @@ const RULES = [
   { re: /グルメ|ご飯|ランチ|食べる|食べ物|ラーメン|激辛|お酒|カフェ|スイーツ|パン/, files: ["gulme_mukou.txt"] },
   { re: /BMX|自転車|サイクルパーク|競輪場|パーク/, files: ["ciclpark.txt"] },
   { re: /古墳|前方後円墳/, files: ["terado_otsuka.txt", KURUMAZUKA] },
-  { re: /寺戸大塚/, files: ["terado_otsuka.txt"] },
-  { re: /物集女車塚/, files: [KURUMAZUKA] },
-  { re: /長岡京|長岡宮|都|桓武天皇/, files: ["overview.txt", "daigokuden.txt", "choudoin.txt", "higaiin.txt"] },
-  { re: /大極殿/, files: ["daigokuden.txt"] },
-  { re: /朝堂院/, files: ["choudoin.txt"] },
-  { re: /東院公園/, files: ["higaiin.txt"] },
+  // 「都」1文字だと「京都」「都合」にも反応してしまうので、「遷都」「都の跡」などに絞る
+  { re: /長岡京|長岡宮|遷都|都の跡|昔の都|桓武天皇/, files: ["overview.txt", "daigokuden.txt", "choudoin.txt", "higaiin.txt"] },
   { re: /歴史|伝説|由来/, files: ["history.txt"] }
 ];
 
@@ -82,7 +87,12 @@ async function getDynamicKnowledge(userInput) {
     for (const f of rule.files) if (!wanted.some(w => String(w) === String(f))) wanted.push(f);
   }
   let extra = "";
-  for (const f of wanted) extra += "\n\n" + (await loadAny(f));
+  for (const f of wanted) {
+    const text = await loadAny(f);
+    // 上限を超えるファイルは渡さない(ただし1つ目は、長くても必ず渡す)
+    if (extra && extra.length + text.length > MAX_EXTRA_CHARS) continue;
+    extra += "\n\n" + text;
+  }
   return extra;
 }
 
@@ -140,11 +150,19 @@ async function doInit() {
   }
 }
 
+// useAI: false なら、ダウンロードせずに「かんたんモード」にする
 // 戻り値: { ai: true/false, notice: 「かんたんモード」のときの説明 }。失敗してもエラーにはならない
-export function initChat(onStatus = () => {}) {
+export function initChat(onStatus = () => {}, useAI = true) {
   statusCb = onStatus;
-  if (!initPromise) initPromise = doInit();
+  if (!initPromise) {
+    initPromise = useAI ? doInit() : Promise.resolve(simple("今日はかんたんモードでおしゃべりしますね。"));
+  }
   return initPromise;
+}
+
+// 会話の記録を消す(「はじめから」のときや、物語の途中 ⇔ クリア後が切り替わったとき)
+export function resetChat() {
+  history.length = 0;
 }
 
 /* ----- 返事 ----- */
@@ -154,10 +172,38 @@ const dummy = {
   free: ["向日市のことなら何でも聞いてくださいね。", "気になる場所があれば、マップから訪ねてみましょう。"]
 };
 let n = 0;
+let lastMode = null;
+
+const MAX_REPLY_CHARS = 150; // 返事の長さの上限(文字数)。画面の枠に収まりやすい長さ
+const REPLY_RULE = `
+
+【返事の書き方(必ず守る)】
+・かぐやの話し言葉で、2〜3文、${MAX_REPLY_CHARS}文字以内で短く答える。
+・箇条書き、番号付きのリスト、**太字**、# 見出しは使わない。
+・たくさんある場合は、いちばんのおすすめを1〜2個だけ紹介する。`;
+
+// AIの返事を、画面で読みやすい形に整える
+//   ・**太字** や # 見出し、「1.」「・」などのリストの記号を外す
+//   ・長すぎるとき(途中で切れたときも)は、文の終わり(。!?)で切る
+function tidy(text) {
+  let t = String(text ?? "")
+    .replace(/\*\*|__|`/g, "")
+    .replace(/^\s*#+\s*/gm, "")
+    .replace(/^\s*(?:[-*・]|\d+[.)．])\s*/gm, "")
+    .replace(/\n{2,}/g, "\n")
+    .trim();
+  if (t.length > MAX_REPLY_CHARS) {
+    const head = t.slice(0, MAX_REPLY_CHARS);
+    const cut = Math.max(...["。", "！", "？", "!", "?"].map(c => head.lastIndexOf(c)));
+    t = cut > 20 ? head.slice(0, cut + 1) : head + "……";
+  }
+  return t;
+}
 
 // mode: "story"(物語の途中) / "free"(クリア後)
 export async function sendMessage(text, mode = "story") {
   if (initPromise) await initPromise;
+  if (mode !== lastMode) { resetChat(); lastMode = mode; } // 話のモードが変わったら、前の会話は忘れる
   if (!engine) {
     await new Promise(r => setTimeout(r, 400));
     const list = dummy[mode] || dummy.story;
@@ -166,16 +212,23 @@ export async function sendMessage(text, mode = "story") {
 
   const extra = await getDynamicKnowledge(text);
   const messages = [
-    { role: "system", content: baseSystemPrompt + extra },
+    // 小さなAIは、最後に書いたことほど守りやすいので、短く答えるルールを最後にもう一度書く
+    { role: "system", content: baseSystemPrompt + extra + REPLY_RULE },
     ...history,
     { role: "user", content: text }
   ];
-  const reply = await engine.chat.completions.create({
-    messages,
-    temperature: 0.3, // 低いほど、知識ファイルに書いてあることから外れにくい
-    max_tokens: 300
-  });
-  const answer = reply.choices[0].message.content;
+  let reply;
+  try {
+    reply = await engine.chat.completions.create({
+      messages,
+      temperature: 0.3, // 低いほど、知識ファイルに書いてあることから外れにくい
+      max_tokens: 160 // 長すぎる返事にならないように(途中で切れたぶんは tidy() で整える)
+    });
+  } catch (err) {
+    resetChat(); // 長くなりすぎた会話が原因のこともあるので、記録を消して次に備える
+    throw err;
+  }
+  const answer = tidy(reply.choices[0].message.content);
 
   history.push({ role: "user", content: text }, { role: "assistant", content: answer });
   while (history.length > MAX_HISTORY) history.splice(0, 2);
