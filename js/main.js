@@ -1,7 +1,7 @@
 import { state, progress, markDone, finishGame, restartStory, resetAll } from "./state.js";
 import { characters, chapters, chapterOrder } from "./story.js";
 import { showMap } from "./map.js";
-import { sendMessage } from "./chat.js";
+import { initChat, sendMessage } from "./chat.js";
 import { startGame } from "./games.js";
 
 const $ = id => document.getElementById(id);
@@ -32,6 +32,7 @@ function showTitle() {
   const hasSave = state.done.length > 0;
   $("start").textContent = hasSave ? "続きから" : "ゲームstart";
   $("restart").hidden = !hasSave;
+  $("ver").textContent = "ver." + (window.APP_VERSION ?? "?"); // いまのスマホが読んでいる版が分かる
   setChara($("titleChara"), "kaguya", true);
   show("title");
 }
@@ -127,6 +128,7 @@ function showHome() {
   $("barFill").style.width = p + "%";
   $("barText").textContent = p + "%";
   setChara($("homeChara"), "kaguya", true);
+  $("homeHint").hidden = freeMode(); // クリア後は「次のストーリー」がないので隠す
   show("home");
 }
 
@@ -187,13 +189,28 @@ function say(text) {
   $("chatText").textContent = text;
 }
 
+const chatGreeting = () => (freeMode() ? "向日市のこと、なんでも話しましょう。" : "こんにちは。何か気になることはありますか?");
+let chatState = "idle"; // "idle"(まだ) → "loading"(AIを読み込み中) → "ready"(話せる)
+const setChatEnabled = on => { $("msg").disabled = !on; $("send").disabled = !on; };
+
+// 会話画面を初めて開いたときに、AI(と知識ファイル)を読み込む
+function startChat() {
+  chatState = "loading";
+  setChatEnabled(false);
+  say("かぐやを呼んでいます……(初回は数分かかります)");
+  initChat(text => say(text)).then(result => {
+    chatState = "ready";
+    setChatEnabled(true);
+    say(result.ai ? chatGreeting() : result.notice + "\n" + chatGreeting());
+  });
+}
+
 function openChat() {
   $("chatTitle").textContent = freeMode() ? "自由会話" : "会話";
   setChara($("chatChara"), "kaguya", true);
   show("chat");
-  if (!$("chatText").textContent) {
-    say(freeMode() ? "向日市のこと、なんでも話しましょう。" : "こんにちは。何か気になることはありますか?");
-  }
+  if (chatState === "idle") startChat();
+  else if (chatState === "ready" && !$("chatText").textContent) say(chatGreeting());
 }
 
 async function send() {

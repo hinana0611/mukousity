@@ -7,7 +7,28 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
-<link rel="stylesheet" href="css/style.css">
+<script>
+  // ★ ファイルを更新したら、この数字を1つ上げる(スマホが前のファイルを使い続けないようにする)
+  window.APP_VERSION = "1";
+
+  // CSS に ?v=数字 を付ける
+  const css = document.createElement("link");
+  css.rel = "stylesheet";
+  css.href = "css/style.css?v=" + window.APP_VERSION;
+  document.head.appendChild(css);
+
+  // JS(読み込む先のファイルも含めて全部)に ?v=数字 を付ける
+  // ※ js フォルダに新しい .js ファイルを足したら、ここにも書き足す
+  const files = ["main", "state", "story", "map", "chat", "games",
+    "games/kit", "games/wordsearch", "games/danmaku_tutorial", "games/danmaku_boss",
+    "games/slide_puzzle", "games/runner"];
+  const imports = {};
+  files.forEach(f => { imports["./js/" + f + ".js"] = "./js/" + f + ".js?v=" + window.APP_VERSION; });
+  const map = document.createElement("script");
+  map.type = "importmap";
+  map.textContent = JSON.stringify({ imports });
+  document.head.appendChild(map);
+</script>
 </head>
 <body>
 <div id="app">
@@ -20,6 +41,7 @@
       <button class="btn main" id="start">ゲームstart</button>
       <button class="btn" id="restart" hidden>はじめから</button>
     </div>
+    <p class="ver" id="ver"></p>
   </section>
  
   <!-- 会話(プロローグ・チュートリアル・ボス・EDで共通) -->
@@ -48,6 +70,7 @@
       </div>
     </div>
     <div class="stage solo"><div class="chara big" id="homeChara"></div></div>
+    <p class="hint" id="homeHint">メニューを開いて、マップから次のストーリーに進もう</p>
   </section>
  
   <!-- マップ -->
@@ -106,6 +129,6 @@
 </div>
  
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-<script type="module" src="js/main.js"></script>
+<script type="module">import("./js/main.js?v=" + window.APP_VERSION);</script>
 </body>
 </html>

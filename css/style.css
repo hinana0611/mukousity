@@ -56,6 +56,11 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 #text { margin: 0; }
 .tap { position: absolute; right: 14px; bottom: 8px; font-size: 12px; color: var(--bamboo); }
 
+/* ホームの案内(下)と、タイトルの版番号 */
+.hint { margin: 0 20px 28px; text-align: center; color: var(--bamboo); font-size: 14px; font-weight: 700; }
+.hint[hidden] { display: none; }
+.ver { margin: -24px 0 10px; font-size: 11px; opacity: .5; text-align: center; }
+
 /* ホーム・上部バー */
 .topbar { display: flex; align-items: flex-start; gap: 12px; padding: 8px 12px; z-index: 1100; }
 .label { font-weight: 700; }
