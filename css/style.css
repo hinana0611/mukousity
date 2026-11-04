@@ -203,7 +203,9 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
   mask-image: linear-gradient(to bottom, #000 78%, transparent 100%), linear-gradient(to right, transparent, #000 22%, #000 78%, transparent);
   mask-composite: intersect;
 }
-#dialog .chara.hasImg { width: 62%; }
+/* ストーリーの会話: 立ち絵を少し下げる(上にすきまを空ける)。
+   2つ目の数字が下げる量。画面の高さの8%(最小24px・最大70px)。大きくすると、もっと下がる */
+#dialog .chara.hasImg { width: 62%; background-position: 53% clamp(24px, 8vh, 70px); }
 /* 画面に映るのが1人だけのときは、横いっぱいに */
 #dialog .stage:has(#charaR:empty:not(.hasImg)) #charaL.hasImg { width: 100%; max-width: 380px; }
 #chat .chara.big.hasImg { width: 100%; max-width: 380px; background-size: auto 210%; } /* チャット: 2.1倍 */
