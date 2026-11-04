@@ -8,6 +8,10 @@
   --mist: #f4eef6;     /* 文字の色 */
   --line: #4b3f86;     /* 線の色 */
   --glass: rgba(30, 24, 70, .82); /* 半透明の枠 */
+  /* 筆記体の文字(タイトルと Happy End で共通。ここを変えると両方が変わる) */
+  --script-font: "Great Vibes", "Segoe Script", "Brush Script MT", cursive;
+  --script-gold: linear-gradient(180deg, #fff8dc, #f2d479 55%, #e8a04a);
+  --script-glow: drop-shadow(0 0 12px rgba(242, 212, 121, .55));
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -87,13 +91,13 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 
 /* タイトル */
 #title { text-align: center; }
-#title h1 {
-  margin: 28px 0 0; font-size: 26px; letter-spacing: .08em; line-height: 1.3;
-  background: linear-gradient(180deg, #fff8dc, var(--moon) 55%, #d99a3c);
+#title h1 { /* 題名: 金色の筆記体(Happy End と同じ Great Vibes) */
+  margin: 24px 12px 0; font-family: var(--script-font); font-weight: 400;
+  font-size: clamp(28px, 9.4vw, 44px); letter-spacing: 0; line-height: 1.2; white-space: nowrap; /* 1行に収める */
+  background: var(--script-gold);
   -webkit-background-clip: text; background-clip: text; color: transparent;
-  filter: drop-shadow(0 0 10px rgba(242, 212, 121, .45));
+  filter: var(--script-glow);
 }
-#title .sub { margin: 4px 0 0; font-size: 13px; letter-spacing: .3em; color: var(--sakura); }
 #title .stage { padding-top: 8px; }
 .actions { display: flex; flex-direction: column; gap: 12px; width: 220px; margin: 0 auto 36px; }
 
@@ -118,15 +122,17 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 .chara.hasImg.speak { transform: translateY(-4px); filter: drop-shadow(0 0 14px rgba(255, 214, 226, .55)) drop-shadow(0 8px 16px rgba(0, 0, 0, .4)); }
 .chara.hasImg.dim { opacity: .6; filter: brightness(.65) drop-shadow(0 8px 16px rgba(0, 0, 0, .45)); }
 .chara.big.hasImg { width: 78%; max-height: 560px; animation: floaty 4s ease-in-out infinite; } /* ふわふわ浮かぶ */
-/* タイトル: 1.3倍に大きくして、顔と上半身をしっかり映す(下のほうは、ふんわり消す) */
-#title .chara.big.hasImg {
+/* タイトル・ホーム: 大きくして、顔と上半身をしっかり映す(下のほうは、ふんわり消す)
+   拡大の大きさは background-size の % (100% で全身。大きいほど顔に寄る) */
+#title .chara.big.hasImg, #home .chara.big.hasImg {
   width: 100%; max-width: 420px; max-height: none; align-self: stretch; height: auto;
-  background-size: auto 130%; background-position: 53% 0%;
+  background-size: auto 200%; background-position: 53% 0%; /* タイトル: 1.6倍 */
   -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent 100%), linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
   -webkit-mask-composite: source-in;
   mask-image: linear-gradient(to bottom, #000 80%, transparent 100%), linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
   mask-composite: intersect;
 }
+#home .chara.big.hasImg { background-size: auto 150%; } /* ホーム: 1.5倍 */
 @keyframes floaty { 50% { translate: 0 -6px; } }
 /* チュートリアル・ボス戦: 右のキャラを高い位置に */
 .stage.stagger #charaR { align-self: flex-start; margin-top: 8%; }
@@ -156,9 +162,9 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 /* エンディングの「Happy End」: 枠のまん中に、金色の筆記体で大きく */
 #textbox.ending #text {
   display: flex; align-items: center; justify-content: center; height: calc(100% - 38px);
-  font-family: "Great Vibes", "Segoe Script", "Brush Script MT", cursive; font-size: 56px; line-height: 1.2; text-align: center; white-space: nowrap;
-  background: linear-gradient(180deg, #fff8dc, var(--moon) 55%, #e8a04a); -webkit-background-clip: text; background-clip: text; color: transparent;
-  filter: drop-shadow(0 0 12px rgba(242, 212, 121, .55));
+  font-family: var(--script-font); font-weight: 400; font-size: 56px; line-height: 1.2; text-align: center; white-space: nowrap;
+  background: var(--script-gold); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: var(--script-glow);
 }
 #textbox.ending #text { animation: endingIn 1.2s ease-out; } /* 一気に出して、ふわっと浮かび上がる */
 @keyframes endingIn { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
@@ -200,7 +206,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 #dialog .chara.hasImg { width: 62%; }
 /* 画面に映るのが1人だけのときは、横いっぱいに */
 #dialog .stage:has(#charaR:empty:not(.hasImg)) #charaL.hasImg { width: 100%; max-width: 380px; }
-#chat .chara.big.hasImg { width: 100%; max-width: 380px; }
+#chat .chara.big.hasImg { width: 100%; max-width: 380px; background-size: auto 210%; } /* チャット: 2.1倍 */
 
 /* タイトルの「デバッグモード」ボタン */
 .dbgToggle { display: block; margin: 0 auto 16px; min-height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; background: transparent; font-size: 12px; opacity: .7; }
