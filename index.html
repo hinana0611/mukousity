@@ -5,11 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mukou City with Kaguya</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<!-- AI会話の読み込みを速くするための、先回りの接続 -->
+<link rel="preconnect" href="https://esm.run" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://huggingface.co" crossorigin>
+<link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
 <script>
   // ★ ファイルを更新したら、この数字を1つ上げる(スマホが前のファイルを使い続けないようにする)
-  window.APP_VERSION = "2";
+  window.APP_VERSION = "3";
 
   // CSS に ?v=数字 を付ける
   const css = document.createElement("link");
@@ -92,6 +97,7 @@
       <button class="btn main" id="retryBtn">もう一度</button>
       <button class="btn" id="toMapBtn">マップへ</button>
     </div>
+    <button type="button" class="btn" id="dbgClear" hidden>【デバッグ】クリアにする</button>
   </section>
 
   <!-- AI会話 -->

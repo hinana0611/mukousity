@@ -14,6 +14,7 @@ const freeMode = () => state.cleared && state.done.includes("ed");
 let stopGame = null; // 遊んでいるゲームを止める関数
 function show(name) {
   if (name !== "game" && stopGame) { stopGame(); stopGame = null; }
+  if (name !== "game") dbgHide();
   document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === name));
   $("menu").hidden = true;
 }
@@ -38,6 +39,7 @@ function showTitle() {
 }
 
 $("start").onclick = () => {
+  preloadChat();
   if (freeMode()) return showHome();
   const next = order.find(id => !state.done.includes(id));
   // プロローグとEDは会話から再開。ほかの章はマップのピンから始める
@@ -47,6 +49,7 @@ $("start").onclick = () => {
 
 $("restart").onclick = () => {
   if (!confirm("はじめからやり直します。いまの進捗はリセットされます。よろしいですか?")) return;
+  preloadChat();
   restartStory();
   playChapter("prologue");
 };
@@ -111,16 +114,50 @@ function runGame(id) {
   if (stopGame) { stopGame(); stopGame = null; }
   show("game");
   $("gameResult").hidden = true;
+  dbgStart(id);
   const ch = chapters[id];
-  stopGame = startGame(ch.game, $("gameBox"), result => {
+  const onResult = result => {
     // anyResult(負けイベント)は、勝っても負けても先へ進む
     if (result === "clear" || ch.anyResult) return ch.after ? playAfter(id) : finishChapter(id);
+    dbgMiss();
     $("resultMsg").textContent = "失敗……もう一度挑戦しますか?";
     $("gameResult").hidden = false;
     $("retryBtn").onclick = () => runGame(id);
     $("toMapBtn").onclick = showHome;
-  });
+  };
+  dbgClearFn = () => onResult("clear");
+  stopGame = startGame(ch.game, $("gameBox"), onResult);
 }
+
+/* ---------- デバッグ用: ゲームを「クリア扱い」にするボタン(URLに ?debug=1) ----------
+   ・スライドパズル … ゲームを始めて20秒たつと出る
+   ・そのほか(ワード探し・RUN ESCAPE・ラスボス) … 1回失敗すると出る
+     (ワード探しは失敗がないので、まちがった言葉を1回選ぶと出る)
+   ・チュートリアル(第一章の弾幕)には出ない */
+const dbgOn = new URLSearchParams(location.search).has("debug");
+let dbgTimer = null, dbgFails = 0, dbgGameId = null, dbgClearFn = null;
+
+function dbgHide() {
+  clearTimeout(dbgTimer);
+  $("dbgClear").hidden = true;
+}
+function dbgStart(id) {
+  dbgHide();
+  if (dbgGameId !== id) { dbgGameId = id; dbgFails = 0; } // 同じ章のやり直しでは、失敗の数を引き継ぐ
+  const game = chapters[id].game;
+  if (!dbgOn || game === "danmaku_tutorial") return;
+  if (game === "slide_puzzle") dbgTimer = setTimeout(() => { $("dbgClear").hidden = false; }, 20000);
+  else if (dbgFails > 0) $("dbgClear").hidden = false;
+}
+function dbgMiss() { // 失敗が1回あったとき
+  if (!dbgOn || !dbgGameId) return;
+  const game = chapters[dbgGameId].game;
+  if (game === "danmaku_tutorial") return;
+  dbgFails++;
+  if (game !== "slide_puzzle") $("dbgClear").hidden = false;
+}
+$("dbgClear").onclick = () => { if (dbgClearFn) dbgClearFn(); };
+$("gameBox").addEventListener("gamemiss", dbgMiss); // ワード探しの「まちがい」
 
 /* ---------- ホーム ---------- */
 function showHome() {
@@ -194,6 +231,14 @@ let chatState = "idle"; // "idle"(まだ) → "loading"(AIを読み込み中) �
 const setChatEnabled = on => { $("msg").disabled = !on; $("send").disabled = !on; };
 
 // 会話画面を初めて開いたときに、AI(と知識ファイル)を読み込む
+// 会話画面を開く前に、裏で読み込みを始めておく(開いたときにはもう話せる)
+// 通信量を節約する設定のスマホでは、会話画面を開くまで待つ
+function preloadChat() {
+  if (chatState !== "idle") return;
+  if (navigator.connection && navigator.connection.saveData) return;
+  startChat();
+}
+
 function startChat() {
   chatState = "loading";
   setChatEnabled(false);
@@ -246,3 +291,4 @@ if (new URLSearchParams(location.search).has("debug")) {
 }
 
 showTitle();
+window.__pc = playChapter;

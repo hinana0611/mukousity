@@ -8,6 +8,9 @@
 //   ・WebGPU に対応したブラウザが必要。使えないときは「かんたんモード」(決まった返事)になる
 
 const MODEL_ID = "Qwen2.5-1.5B-Instruct-q4f16_1-MLC";
+// もっと軽く・速くしたいときは、上の行をやめて下の行を使う(ダウンロードは約1GB → 約0.4GB)。
+// そのかわり賢さは下がり、知識ファイルに書いていないことを答えやすくなる。
+// const MODEL_ID = "Qwen2.5-0.5B-Instruct-q4f16_1-MLC";
 const WEBLLM_URL = "https://esm.run/@mlc-ai/web-llm";
 const KNOWLEDGE_DIR = "knowledge";
 const MAX_HISTORY = 8; // 覚えておく会話の数(質問と返事を1つずつで2)。多いとAIが重く・混乱しやすい
@@ -86,6 +89,20 @@ async function getDynamicKnowledge(userInput) {
 /* ----- 初期化 ----- */
 const simple = notice => ({ ai: false, notice });
 
+// AI本体を作る。別スレッド(Worker)で動かすと、読み込み中もゲームや画面が固まりにくい
+async function createEngine(webllm) {
+  const opts = { initProgressCallback: p => statusCb(`AI準備中: ${Math.round(p.progress * 100)}%`) };
+  try {
+    const worker = new Worker(new URL("./chat-worker.js?v=" + (window.APP_VERSION ?? ""), import.meta.url), { type: "module" });
+    const workerFailed = new Promise((_, reject) =>
+      worker.addEventListener("error", e => reject(new Error("worker error: " + e.message))));
+    return await Promise.race([webllm.CreateWebWorkerMLCEngine(worker, MODEL_ID, opts), workerFailed]);
+  } catch (err) {
+    console.warn("Workerで動かせなかったので、画面の中で動かします", err);
+    return await webllm.CreateMLCEngine(MODEL_ID, opts);
+  }
+}
+
 async function doInit() {
   try {
     const noGpu = simple("このブラウザはAI会話(WebGPU)に対応していないので、かんたんモードでおしゃべりしますね。");
@@ -93,17 +110,28 @@ async function doInit() {
     // 入り口はあっても、使えるGPUがない端末では、大きなダウンロードを始める前に切り替える
     if (navigator.gpu.requestAdapter && !(await navigator.gpu.requestAdapter())) return noGpu;
 
-    statusCb("知識ファイルを読み込み中……");
-    const rule = await loadAny("system_rule.txt", RULE_DIRS);
-    const summary = await loadAny("summary.txt");
+    // 保存したモデルを、ブラウザが勝手に消さないように頼む(2回目からの読み込みが速くなる)
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+    statusCb("読み込み中……");
+    // AIの部品の取り寄せと、知識ファイルの読み込みを、同時に始める
+    const webllmReady = import(WEBLLM_URL);
+    webllmReady.catch(() => {}); // 先に失敗しても、あとで受け取るまで警告を出さない
+    const [rule, summary] = await Promise.all([loadAny("system_rule.txt", RULE_DIRS), loadAny("summary.txt")]);
     if (!rule) return simple("知識ファイル(system_rule.txt)が見つからなかったので、かんたんモードでおしゃべりしますね。");
     baseSystemPrompt = `${rule}\n\n【概要・参考情報】\n${summary}`;
 
     statusCb("AIモデルを読み込み中……(初回は数分かかります)");
-    const webllm = await import(WEBLLM_URL);
-    engine = await webllm.CreateMLCEngine(MODEL_ID, {
-      initProgressCallback: p => statusCb(`AI準備中: ${Math.round(p.progress * 100)}%`)
-    });
+    engine = await createEngine(await webllmReady);
+
+    // 最初の返事が遅くならないよう、短い質問で1回だけ試運転しておく
+    statusCb("最後の準備中……");
+    try {
+      await engine.chat.completions.create({
+        messages: [{ role: "system", content: "返事は1文字だけ。" }, { role: "user", content: "あ" }],
+        max_tokens: 1
+      });
+    } catch {}
     return { ai: true, notice: "" };
   } catch (err) {
     console.error(err);

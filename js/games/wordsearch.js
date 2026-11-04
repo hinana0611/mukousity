@@ -192,6 +192,7 @@ export function start(box, onFinish) {
       message("「" + answer + "」はすでに見つけています。");
     } else {
       message("不正解です。別の言葉を探してください。");
+      box.dispatchEvent(new CustomEvent("gamemiss")); // デバッグ用の合図(main.js が受け取る)
     }
   }
 
