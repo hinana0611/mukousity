@@ -2,7 +2,8 @@ import { state, progress, markDone, finishGame, restartStory, resetAll } from ".
 import { characters, chapters, chapterOrder } from "./story.js";
 import { showMap } from "./map.js";
 import { initChat, sendMessage, resetChat } from "./chat.js";
-import { startGame } from "./games.js";
+import { startGame, titles as gameTitles } from "./games.js";
+import { pauseGames } from "./games/kit.js";
 import { createTyper, phrase } from "./typer.js";
 
 const $ = id => document.getElementById(id);
@@ -18,6 +19,7 @@ const freeMode = () => state.cleared && state.done.includes("ed");
 /* ---------- 画面切り替え ---------- */
 let stopGame = null; // 遊んでいるゲームを止める関数
 function show(name) {
+  closeAsk(false); // 確認の窓が出ていたら閉じる
   if (name !== "game" && stopGame) { stopGame(); stopGame = null; }
   if (name !== "game") dbgHide();
   if (name !== "dialog") dialogTyper.stop();
@@ -27,6 +29,33 @@ function show(name) {
   setDbgMenu(false);              // 画面が変わったら、デバッグメニューはたたむ
   $("menu").hidden = true;
 }
+
+/* ---------- 確認の窓(ブラウザの confirm の代わり。ゲームの見た目に合わせた窓) ----------
+   使い方: if (await ask("やめますか?")) { … }
+   はい → true / いいえ・窓の外を押す・Esc → false。窓が出ているあいだ、ゲームは一時停止する */
+let askDone = null;
+function ask(msg, { yes = "はい", no = "いいえ" } = {}) {
+  closeAsk(false);
+  $("askMsg").textContent = msg;
+  $("askYes").textContent = yes;
+  $("askNo").textContent = no;
+  $("ask").hidden = false;
+  pauseGames(true);
+  $("askNo").focus();
+  return new Promise(resolve => { askDone = resolve; });
+}
+function closeAsk(answer) {
+  if (!askDone) return;
+  const done = askDone;
+  askDone = null;
+  $("ask").hidden = true;
+  pauseGames(false);
+  done(answer);
+}
+$("askYes").onclick = () => closeAsk(true);
+$("askNo").onclick = () => closeAsk(false);
+$("ask").addEventListener("click", e => { if (e.target.id === "ask") closeAsk(false); }); // 窓の外を押したら「いいえ」
+document.addEventListener("keydown", e => { if (askDone && e.key === "Escape") { e.stopPropagation(); closeAsk(false); } }, true);
 
 // セリフに合わせて表情を選ぶ(poses がないキャラは、いつもの image)
 //   笑顔: 「ふふ」「ありがとう」など / 考え顔: 「？」「おや」「大変」など / それ以外: ふつう
@@ -73,8 +102,8 @@ $("start").onclick = () => {
   showHome();
 };
 
-$("restart").onclick = () => {
-  if (!confirm("はじめからやり直します。いまの進捗はリセットされます。よろしいですか?")) return;
+$("restart").onclick = async () => {
+  if (!await ask("はじめからやり直します。\nいまの進捗はリセットされます。よろしいですか?", { yes: "やり直す", no: "やめておく" })) return;
   preloadChat();
   restartStory();
   resetChat(); // 前の会話を覚えたままにしない
@@ -200,20 +229,36 @@ function finishChapter(id) {
 }
 
 /* ---------- ミニゲーム ---------- */
-function runGame(id) {
+// replay: true … ミニゲーム一覧から遊ぶとき(ストーリーは進めず、終わったら結果を出す)
+let replaying = false;
+function runGame(id, { replay = false } = {}) {
   if (stopGame) { stopGame(); stopGame = null; }
+  replaying = replay;
   show("game");
+  // 一覧から遊ぶときは、左上に「ミニゲーム一覧へ」戻るボタン。ストーリーのときは右上の「やめる」
+  $("quitGame").textContent = replay ? "← ミニゲーム一覧へ" : "✕ やめる";
+  $("quitGame").classList.toggle("back", replay);
   $("gameResult").hidden = true;
   dbgStart(id);
   const ch = chapters[id];
+  // 結果の窓を出す(win: true ならクリア。かぐやが笑顔になる)
+  const showResult = (msg, win) => {
+    $("resultMsg").textContent = msg;
+    $("gameResult").classList.toggle("win", win);
+    $("gameResult").hidden = false;
+    $("retryBtn").onclick = () => runGame(id, { replay });
+    $("toMapBtn").textContent = replay ? "ミニゲーム一覧へ" : "マップへ";
+    $("toMapBtn").onclick = replay ? openGames : openMap;
+  };
   const onResult = result => {
+    if (replay) {
+      if (result !== "clear") dbgMiss();
+      return showResult(result === "clear" ? "クリア！ おめでとう！" : "失敗……もう一度挑戦しますか?", result === "clear");
+    }
     // anyResult(負けイベント)は、勝っても負けても先へ進む
     if (result === "clear" || ch.anyResult) return ch.after ? playAfter(id) : finishChapter(id);
     dbgMiss();
-    $("resultMsg").textContent = "失敗……もう一度挑戦しますか?";
-    $("gameResult").hidden = false;
-    $("retryBtn").onclick = () => runGame(id);
-    $("toMapBtn").onclick = openMap;
+    showResult("失敗……もう一度挑戦しますか?", false);
   };
   dbgClearFn = () => onResult("clear");
   stopGame = startGame(ch.game, $("gameBox"), onResult);
@@ -252,9 +297,31 @@ function dbgMiss() { // 失敗が1回あったとき
 $("dbgClear").onclick = () => { if (dbgClearFn) dbgClearFn(); };
 
 // ゲームの途中でやめて、ホームに戻る(show() がゲームを止める)
-$("quitGame").onclick = () => {
-  if (confirm("ゲームをやめてホームに戻りますか?")) showHome();
+// (ミニゲーム一覧から遊んでいるときは、一覧に戻る)
+$("quitGame").onclick = async () => {
+  const where = replaying ? "ミニゲーム一覧" : "ホーム";
+  if (!await ask(`ゲームをやめて、${where}に戻りますか?`, { yes: "戻る", no: "続ける" })) return;
+  if (replaying) openGames(); else showHome();
 };
+
+/* ---------- ミニゲーム一覧(ストーリーを最後まで終えたあと) ---------- */
+// 章の順に、ゲームの名前・章・相手の名前をボタンにして並べる
+function openGames() {
+  const list = $("gameList");
+  list.replaceChildren(...chapterOrder.filter(id => chapters[id].game && !chapters[id].anyResult) /* 負けイベント(チュートリアル)は入れない */.map((id, i, all) => {
+    const who = characters[id.replace(/\d+$/, "")]?.name ?? ""; // "sawara1" → "sawara"
+    const no = i === all.length - 1 ? "最終章" : `第${"一二三四五六七八九"[i]}章`;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "gameCard";
+    b.innerHTML = `<b></b><span></span>`;
+    b.querySelector("b").textContent = gameTitles[chapters[id].game] ?? chapters[id].game;
+    b.querySelector("span").textContent = `${no}・${who}`;
+    b.onclick = () => runGame(id, { replay: true });
+    return b;
+  }));
+  show("games");
+}
 $("gameBox").addEventListener("gamemiss", dbgMiss); // ワード探しの「まちがい」
 
 /* ---------- ホーム ---------- */
@@ -263,7 +330,11 @@ function showHome() {
   $("barFill").style.width = p + "%";
   $("barText").textContent = p + "%";
   setChara($("homeChara"), "kaguya", true);
-  $("homeHint").hidden = freeMode(); // クリア後は「次のストーリー」がないので隠す
+  // クリア後は「次のストーリー」がないので、ミニゲームの案内にする
+  $("homeGames").hidden = !freeMode(); // 「ミニゲーム」は、ストーリーを最後まで終えたら出る
+  $("homeHint").textContent = freeMode()
+    ? "ミニゲームで、もう一度遊べるよ"
+    : "マップから次のストーリーに進もう";
   show("home");
 }
 
@@ -280,6 +351,7 @@ document.addEventListener("click", e => {
   if (go === "home") showHome();
   if (go === "map") openMap();
   if (go === "chat") openChat();
+  if (go === "games") openGames();
 });
 
 /* ---------- マップ ---------- */

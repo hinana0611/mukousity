@@ -19,6 +19,10 @@ const KEYMAP = {
   ArrowLeft: "left", a: "left", ArrowRight: "right", d: "right"
 };
 
+// ゲームを一時停止する(確認の窓を出しているあいだなど)。true で止まり、false で動き出す
+let paused = false;
+export function pauseGames(on) { paused = !!on; }
+
 export function createStage(box, { title, left = "", right = "", width = 800, height = 600, pad = true }) {
   box.innerHTML = `
     <div class="dm">
@@ -59,10 +63,12 @@ export function createStage(box, { title, left = "", right = "", width = 800, he
       box.innerHTML = "";
     },
     run(update, draw) {
+      // 一時停止中(確認の窓が出ているあいだ)は、時間を進めない
       const STEP = 1000 / 60;
       let last = performance.now(), acc = 0;
       const tick = now => {
         if (stopped) return;
+        if (paused) { last = now; raf = requestAnimationFrame(tick); return; }
         acc += Math.min(now - last, 100);
         last = now;
         while (acc >= STEP && !stopped) { update(); acc -= STEP; }

@@ -12,7 +12,7 @@ import { start as runner } from "./games/runner.js";
 // 5本とも本物が入っています。登録のないidは「仮のゲーム」(クリア/失敗ボタンだけ)になります。
 // 本物ができたら、該当する id を差し替えていきます。
 
-const titles = {
+export const titles = {
   danmaku_tutorial: "弾幕(チュートリアル)",
   slide_puzzle: "スライドパズル",
   wordsearch: "ワード探し",

@@ -37,7 +37,7 @@
 
 ## 物語の流れ
 
-プロローグ → 5章(`chapterOrder`: `sawara1` → `taira` → `sugawara` → `sutoku` → `sawara2`)→ ED → クリア後モード(全ピン開放・自由会話)。
+プロローグ → 5章(`chapterOrder`: `sawara1` → `taira` → `sugawara` → `sutoku` → `sawara2`)→ ED → クリア後モード(全ピン開放・自由会話・ホームの「ミニゲーム」ボタンから各ゲームを何回でも遊べる。`js/main.js` の `openGames()` / `runGame(id, { replay: true })`。replay ではストーリーは進めない)。
 章は `lines`(ゲーム前の会話)→ `game` → `after`(クリア後の会話)→ `next` の順に進む。`anyResult: true` は負けイベント(勝敗に関係なく進む)。
 
 ## 変更するときの決まり
@@ -51,6 +51,7 @@
 - AI会話の知識を増やすときは `knowledge/` にテキストを置き、`js/chat.js` の `RULES`(質問のキーワード → 渡すファイル)に追加する。サブフォルダを足したら `SEARCH_DIRS` にも追加する
 - AIのデータ(約1GB)は、会話画面で本人が「ダウンロードして話す」を選んだときだけ読み込む(許可は `localStorage` の `mukou-ai-ok` に保存)。黙ってダウンロードを始めない
 - 知識ファイルを AI に渡す量は `MAX_EXTRA_CHARS` で制限している(小さなAIが一度に読める量を超えないように)
+- 確認には `confirm()` を使わず、`js/main.js` の `ask(msg, { yes, no })`(Promise で true/false。ゲームの見た目の窓)を使う。窓が出ているあいだは `kit.js` の `pauseGames()` で Canvas系ゲームが止まる
 - `css/style.css` に `[hidden] { display: none !important; }` があるので、表示の切り替えは `hidden` 属性で行う
 - `localStorage` の読み書きは try/catch で囲む。古い保存データ(存在しない章id)は読み込み時に捨てる方針
 - コメント・UI文言は日本語。コード内コメントは、中学生でも読めるくらいのやさしい言葉で書くのが既存のスタイル

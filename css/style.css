@@ -188,6 +188,29 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 /* ミニゲームの上の「やめる」 */
 .gamebar { display: flex; justify-content: flex-end; padding: 6px 12px 0; }
 .gameQuit { min-height: 36px; padding: 0 14px; border: 1px solid rgba(245, 163, 187, .5); border-radius: 999px; background: var(--glass); font-size: 13px; }
+/* ミニゲーム一覧から遊ぶときは、左上の「戻る」ボタンにする */
+.gameQuit.back { margin-right: auto; min-height: 40px; padding: 0 16px; font-weight: 700; border-width: 2px; color: #ffe6ee; }
+
+/* 確認の窓: 夜空色のカードに、考え顔のかぐやが丸い窓からのぞく */
+.ask { position: absolute; inset: 0; z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(10, 8, 30, .72); backdrop-filter: blur(3px); animation: askFade .18s ease-out; }
+.askCard {
+  position: relative; width: 100%; max-width: 340px; padding: 64px 20px 20px; text-align: center; border-radius: 24px;
+  background: linear-gradient(180deg, rgba(52, 38, 108, .98), rgba(28, 22, 66, .98));
+  border: 2px solid rgba(245, 163, 187, .6);
+  box-shadow: 0 0 0 4px rgba(242, 212, 121, .16), 0 14px 34px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .15);
+  animation: askPop .22s ease-out;
+}
+.askCard::before {
+  content: ""; position: absolute; top: -52px; left: 50%; width: 104px; height: 104px; margin-left: -52px; border-radius: 50%;
+  background: #f7e9f3 url(../img/kaguya_think.webp) 53% 2% / auto 300% no-repeat;
+  border: 3px solid var(--moon); box-shadow: 0 0 0 5px rgba(245, 163, 187, .35), 0 8px 20px rgba(0, 0, 0, .4);
+}
+#askMsg { margin: 0 0 18px; white-space: pre-line; font-size: 16px; font-weight: 700; line-height: 1.7; color: #ffe6ee; }
+#askMsg::before, #askMsg::after { content: "✿"; margin: 0 6px; color: var(--sakura); }
+.askBtns { display: flex; gap: 10px; }
+.askBtns .btn { flex: 1; padding: 0 12px; }
+@keyframes askFade { from { opacity: 0; } }
+@keyframes askPop { from { opacity: 0; transform: translateY(10px) scale(.94); } }
 
 /* AI会話: キャラの場所は、残りの高さに合わせて縮む(枠と入力欄は固定) */
 #chat .stage, #dialog .stage { min-height: 0; overflow: hidden; }
@@ -217,6 +240,18 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 /* AI会話: ダウンロードしてよいか */
 .consent { display: flex; gap: 8px; padding: 0 12px 10px; }
 .consent .btn { flex: 1; padding: 0 8px; font-size: 14px; }
+
+/* ホームのボタン(マップ・会話・ミニゲーム): 案内の上に横に並べる */
+.homeNav { display: flex; gap: 10px; margin: 0 20px 10px; }
+.homeBtn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-height: 64px; padding: 6px 4px; color: #ffe6ee; font: inherit; font-size: 14px; font-weight: 700; border-radius: 18px;
+  background: linear-gradient(180deg, rgba(52, 38, 108, .92), rgba(28, 22, 66, .94));
+  border: 2px solid rgba(245, 163, 187, .6); box-shadow: 0 0 0 3px rgba(242, 212, 121, .12), 0 6px 16px rgba(0, 0, 0, .35);
+  transition: transform .12s;
+}
+.homeBtn:active { transform: scale(.96); }
+.homeBtn i { font-style: normal; font-size: 22px; line-height: 1; }
 
 /* ホームの案内(下)と、タイトルの版番号 */
 .hint { margin: 0 20px 28px; padding: 10px 14px; text-align: center; color: #ffd6e2; font-size: 14px; font-weight: 700; border-radius: 999px; background: var(--glass); border: 1px solid rgba(245, 163, 187, .4); }
@@ -251,6 +286,21 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 .spot { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
 .toast { top: 72px; text-align: center; }
 .spot[hidden], .toast[hidden] { display: none; }
+
+/* ミニゲーム一覧: 章ごとのカードを縦に並べる */
+.gamesLabel { align-self: center; color: var(--moon); }
+.gamesLead { margin: 4px 20px 12px; text-align: center; color: #ffd6e2; font-size: 14px; font-weight: 700; }
+.gameList { flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 0 16px calc(16px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; }
+.gameCard {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 64px; padding: 10px 18px;
+  text-align: left; color: inherit; font: inherit; border-radius: 18px;
+  background: linear-gradient(180deg, rgba(52, 38, 108, .9), rgba(28, 22, 66, .92));
+  border: 2px solid rgba(245, 163, 187, .55); box-shadow: 0 0 0 3px rgba(242, 212, 121, .12), 0 6px 16px rgba(0, 0, 0, .35);
+}
+.gameCard:active { transform: scale(.98); }
+.gameCard b { font-size: 17px; color: var(--moon); }
+.gameCard b::before { content: "✿ "; color: var(--sakura); }
+.gameCard span { font-size: 13px; color: #ffd6e2; }
 
 /* AI会話 */
 .inputrow { display: flex; gap: 8px; padding: 10px 12px; background: rgba(14, 11, 40, .6); border-top: 1px solid rgba(245, 163, 187, .3); }
@@ -288,6 +338,9 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
   border: 4px solid var(--moon); box-shadow: 0 0 0 6px rgba(245, 163, 187, .35), 0 10px 26px rgba(0, 0, 0, .4);
 }
 #gameResult[hidden] { display: none; }
+/* クリアしたとき(ミニゲーム一覧から遊んだとき): 笑顔のかぐや */
+#gameResult.win::before { background-image: url(../img/kaguya_laugh.webp); }
+#gameResult.win #resultMsg { color: var(--moon); font-size: 22px; }
 #resultMsg { margin: 4px 0; font-size: 18px; font-weight: 700; color: #ffd6e2; }
 #gameResult .btn { min-width: 200px; }
 
