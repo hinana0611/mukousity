@@ -17,6 +17,8 @@
 * { box-sizing: border-box; }
 [hidden] { display: none !important; } /* display: flex などを付けた要素でも、hidden で必ず隠れるように */
 html, body { height: 100%; margin: 0; background: #0a0820; }
+/* ダブルタップで画面が拡大されないようにする(タップはすぐ反応する。地図・ゲーム画面は、それぞれ自分の設定) */
+html, body, button, .textbox { touch-action: manipulation; }
 body {
   font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
   color: var(--mist);

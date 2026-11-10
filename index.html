@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- 画面の拡大はさせない(ゲームなので、ダブルタップやピンチで大きくならないように) -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Mukou City with Kaguya</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <!-- AI会話の読み込みを速くするための、先回りの接続 -->
@@ -14,7 +15,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
 <script>
   // ★ ファイルを更新したら、この数字を1つ上げる(スマホが前のファイルを使い続けないようにする)
-  window.APP_VERSION = "37";
+  window.APP_VERSION = "38";
 
   // CSS に ?v=数字 を付ける
   const css = document.createElement("link");
@@ -190,6 +191,11 @@
 </div>
  
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+  // iPhone の Safari は user-scalable=no を無視するので、2本指で広げる拡大(ピンチ)をここで止める
+  // (地図の拡大は Leaflet が自分でやるので、これを止めても地図は2本指で拡大できる)
+  ["gesturestart", "gesturechange", "gestureend"].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
+</script>
 <script type="module">import("./js/main.js?v=" + window.APP_VERSION);</script>
 </body>
 </html>
