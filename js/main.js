@@ -30,6 +30,40 @@ function show(name) {
   $("menu").hidden = true;
 }
 
+/* ---------- スマホの画面の大きさに合わせる ----------
+   画面の高さ(--app-h)を、いまの画面の内側の高さにそろえる(100dvh が使えない古いスマホでも、ぴったりになるように) */
+function setAppHeight() {
+  document.documentElement.style.setProperty("--app-h", window.innerHeight + "px");
+}
+setAppHeight();
+window.addEventListener("resize", setAppHeight);
+window.addEventListener("orientationchange", () => setTimeout(setAppHeight, 300));
+
+// ミニゲームが画面に入りきらないときは、まるごと小さくして、ぴったり収める(上下にスクロールさせない)
+function fitGame() {
+  const box = $("gameBox"), el = box.firstElementChild;
+  if (!el) return;
+  el.style.zoom = "";
+  el.style.width = "";
+  const cs = getComputedStyle(box);
+  const room = box.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  const w = el.offsetWidth, h = el.offsetHeight;
+  if (h > room && room > 0) {
+    // 横幅を、いまの幅のまま止めてから小さくする(止めないと、小さくした分だけ横に広がって、縦も伸びてしまう)
+    el.style.width = w + "px";
+    el.style.zoom = String(Math.floor(room / h * 1000) / 1000);
+  }
+}
+const fitObserver = new ResizeObserver(() => setTimeout(fitGame, 0));
+fitObserver.observe($("gameBox"));
+window.addEventListener("resize", () => setTimeout(fitGame, 0));
+// ゲームが入れかわったら、中身の大きさも見張る(必殺技ボタンが出たときなど)
+new MutationObserver(() => {
+  const el = $("gameBox").firstElementChild;
+  if (el) fitObserver.observe(el);
+  fitGame();
+}).observe($("gameBox"), { childList: true });
+
 /* ---------- 確認の窓(ブラウザの confirm の代わり。ゲームの見た目に合わせた窓) ----------
    使い方: if (await ask("やめますか?")) { … }
    はい → true / いいえ・窓の外を押す・Esc → false。窓が出ているあいだ、ゲームは一時停止する */
@@ -331,9 +365,11 @@ $("quitGame").onclick = async () => {
 // 章の順に、ゲームの名前・章・相手の名前をボタンにして並べる
 function openGames() {
   const list = $("gameList");
-  list.replaceChildren(...chapterOrder.filter(id => chapters[id].game && !chapters[id].anyResult) /* 負けイベント(チュートリアル)は入れない */.map((id, i, all) => {
+  list.replaceChildren(...chapterOrder.filter(id => chapters[id].game && !chapters[id].anyResult) /* 負けイベント(チュートリアル)は入れない */.map(id => {
     const who = characters[id.replace(/\d+$/, "")]?.name ?? ""; // "sawara1" → "sawara"
-    const no = i === all.length - 1 ? "最終章" : `第${"一二三四五六七八九"[i]}章`;
+    // 章の番号は、ストーリーの章の順(チュートリアルの第一章も数える)
+    const n = chapterOrder.indexOf(id);
+    const no = n === chapterOrder.length - 1 ? "最終章" : `第${"一二三四五六七八九"[n]}章`;
     const b = document.createElement("button");
     b.type = "button";
     b.className = "gameCard";
