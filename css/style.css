@@ -413,6 +413,10 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 .dm-pad button:active { transform: translateY(3px); box-shadow: 0 1px 0 #b84f6c, 0 2px 6px rgba(0, 0, 0, .3); }
 .dm-jump { width: 100%; margin-top: 12px; min-height: 58px; font-size: 20px; touch-action: none; box-shadow: 0 5px 0 #b84f6c, 0 8px 16px rgba(232, 111, 140, .4); }
 .dm-jump:active { transform: translateY(3px); box-shadow: 0 2px 0 #b84f6c; }
+/* ラスボス戦の必殺技ボタン: チャージ中は暗く、使えるときは光る */
+.dm-special:disabled { opacity: .55; filter: grayscale(.4); }
+.dm-special.ready { animation: specialGlow 1s ease-in-out infinite; }
+@keyframes specialGlow { 50% { box-shadow: 0 5px 0 #b84f6c, 0 0 22px 6px rgba(255, 214, 226, .9); } }
 
 /* スライドパズル: 金の額縁 */
 .sp { width: 100%; max-width: 420px; text-align: center; }

@@ -38,7 +38,7 @@
 ## 物語の流れ
 
 プロローグ → 5章(`chapterOrder`: `sawara1` → `taira` → `sugawara` → `sutoku` → `sawara2`)→ ED → クリア後モード(全ピン開放・自由会話・ホームの「ミニゲーム」ボタンから各ゲームを何回でも遊べる。`js/main.js` の `openGames()` / `runGame(id, { replay: true })`。replay ではストーリーは進めない)。
-章は `lines`(ゲーム前の会話)→ `game` → `after`(クリア後の会話)→ `next` の順に進む。ゲームをクリアするまで(`lines` と、負けイベントの `after`)は、章の主役の子の立ち絵に怨霊の雲 `img/onryo_cloud.webp`(元は `image/onnryou.png`)をかぶせる(`js/main.js` の `haunt` / `heroineOf()`、CSS の `.chara.haunt::after`)。`anyResult: true` は負けイベント(勝敗に関係なく進む)。
+章は `lines`(ゲーム前の会話)→ `game` → `after`(クリア後の会話)→ `next` の順に進む。ゲームをクリアするまで(`lines` と、負けイベントの `after`)は、章の主役の子の立ち絵に怨霊の雲 `img/onryo_cloud.webp`(元は `image/onnryou.png`)をかぶせる(`js/main.js` の `haunt` / `heroineOf()`、CSS の `.chara.haunt::after`)。`anyResult: true` は負けイベント(勝敗に関係なく進む)。最終章のラスボス戦(`js/games/danmaku_boss.js`)は、自分のHPが5で、HPが0になる攻撃を受けると三大怨霊(平・菅原・崇徳)が1人ずつ身代わりになる(3回まで。人数はふだん見せず、身代わりになったときだけ、その子の顔をまん中に出す)。第2形態からは必殺技「桜吹雪」(ボタン・スペースキー。弾を消してボスの最大HPの12%のダメージ、7秒チャージ。当たったあとの無敵は約2.5秒)が使える。
 会話のスキップは、一度最後まで見た場面(`state.seen` の `"章id:lines"` / `"章id:after"`)だけ。はじめて見る場面ではスキップボタンが隠れる(デバッグモードのときは、いつでもスキップできる)。
 
 ## 変更するときの決まり
