@@ -1,4 +1,4 @@
-import { state, progress, markDone, finishGame, restartStory, resetAll } from "./state.js";
+import { state, progress, markDone, markSeen, finishGame, restartStory, resetAll } from "./state.js";
 import { characters, chapters, chapterOrder } from "./story.js";
 import { showMap } from "./map.js";
 import { initChat, sendMessage, resetChat } from "./chat.js";
@@ -81,6 +81,8 @@ function setChara(el, key, speaking, dim = false, text = "", pose = "") {
 Object.values(characters).forEach(c => {
   [c.image, ...Object.values(c.poses ?? {})].filter(Boolean).forEach(src => { new Image().src = src; });
 });
+new Image().src = "img/title_illust.webp"; // タイトル・ハッピーエンドの一枚絵
+new Image().src = "img/onryo_cloud.webp"; // まだ救っていない子にかぶせる、怨霊の雲
 
 /* ---------- タイトル ---------- */
 function showTitle() {
@@ -89,7 +91,8 @@ function showTitle() {
   $("start").textContent = hasSave ? "続きから" : "ゲームstart";
   $("restart").hidden = !hasSave;
   $("ver").textContent = "ver." + (window.APP_VERSION ?? "?"); // いまのスマホが読んでいる版が分かる
-  setChara($("titleChara"), "kaguya", true, false, "", "think"); // タイトルは、口元に手を当てたポーズ(pose1)
+  // タイトルは、ヒロインたちが並んだタイトル用のイラスト(img/title_illust.webp)
+  $("titleChara").style.backgroundImage = "url(img/title_illust.webp)";
   show("title");
 }
 
@@ -112,7 +115,10 @@ $("restart").onclick = async () => {
 
 /* ---------- 会話(プロローグ・各章の前後・ED共通) ---------- */
 // lines の話す人は "taira" や "taira:怨"(名前に(怨)が付く)の形
-function playLines(lines, { stagger = false, onEnd }) {
+// scene … "sawara1:lines" のような場面の名前。はじめて見る場面はスキップできない(2回目から、またはデバッグモードのとき)
+// cg … 【HAPPY END】のような行で、立ち絵のかわりに出す一枚絵(story.js の章の cg)
+// haunt … 怨霊の雲をかぶせるキャラ(まだ救っていない子。["taira"] など)
+function playLines(lines, { stagger = false, onEnd, scene = "", cg = "", haunt = [] }) {
   const keys = lines.map(l => l[0].split(":")[0]);
   // 画面に映すのは、主人公・地の文などを除いた最大2人
   const shown = [...new Set(keys)].filter(k => !characters[k]?.hidden).slice(0, 2);
@@ -127,10 +133,16 @@ function playLines(lines, { stagger = false, onEnd }) {
     const dimOthers = shown.length === 2 && shown.includes(key);
     setChara($("charaL"), shown[0], key === shown[0], dimOthers && key !== shown[0], key === shown[0] ? text : "");
     setChara($("charaR"), shown[1], key === shown[1], dimOthers && key !== shown[1], key === shown[1] ? text : "");
+    $("charaL").classList.toggle("haunt", haunt.includes(shown[0]));
+    $("charaR").classList.toggle("haunt", haunt.includes(shown[1]));
     $("who").textContent = speakerName(who);
     // 【HAPPY END】のような行は、枠のまん中に、筆記体で大きく出す
     const ending = text.match(/^【(.+)】$/);
     $("textbox").classList.toggle("ending", !!ending);
+    const showCg = !!(ending && cg);
+    $("dialogStage").classList.toggle("cg", showCg);
+    $("dialogCg").hidden = !showCg;
+    $("dialogCg").style.backgroundImage = showCg ? `url(${cg})` : "";
     if (ending) dialogTyper.set(toTitleCase(ending[1]), { instant: true, phrase: false }); // エンディングは一気に出す
     else dialogTyper.set(text); // 左から1文字ずつ
   };
@@ -138,6 +150,7 @@ function playLines(lines, { stagger = false, onEnd }) {
     if (ended) return;
     ended = true;
     dialogTyper.stop();
+    if (scene) markSeen(scene); // 最後まで見たので、次からはスキップできる
     onEnd();
   };
 
@@ -152,7 +165,8 @@ function playLines(lines, { stagger = false, onEnd }) {
     e.stopPropagation();
     showLog(lines.slice(0, i + 1));
   };
-  // スキップ: この場面の会話を最後まで飛ばす
+  // スキップ: この場面の会話を最後まで飛ばす(一度見た場面だけ)
+  $("skipBtn").hidden = !!scene && !state.seen.includes(scene) && !dbgOn;
   $("skipBtn").onclick = e => {
     e.stopPropagation();
     end();
@@ -203,10 +217,17 @@ document.addEventListener("keydown", e => {
   }
 });
 
+// 章の主役のキャラ("sawara2" → "sawara")。プロローグ・EDは主役なし
+const heroineOf = id => (chapterOrder.includes(id) ? id.replace(/\d+$/, "") : "");
+
 // 章の会話 → ゲーム → (クリア後の会話) → 次へ
+// ゲームをクリアするまでは、主役の子に怨霊の雲をかぶせる
 function playChapter(id) {
   const ch = chapters[id];
   playLines(ch.lines, {
+    scene: id + ":lines",
+    cg: ch.cg,
+    haunt: [heroineOf(id)],
     stagger: id === "sawara1" || id === "sawara2",
     onEnd: () => (ch.game ? runGame(id) : finishChapter(id))
   });
@@ -214,6 +235,8 @@ function playChapter(id) {
 
 function playAfter(id) {
   playLines(chapters[id].after, {
+    scene: id + ":after",
+    haunt: chapters[id].anyResult ? [heroineOf(id)] : [], // 負けイベントのあとは、まだ救えていない
     stagger: id === "sawara1" || id === "sawara2",
     onEnd: () => finishChapter(id)
   });

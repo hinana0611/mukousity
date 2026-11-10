@@ -23,7 +23,7 @@
 | --- | --- |
 | `index.html` | 全画面の骨組み。`APP_VERSION` とキャッシュ対策の importmap を持つ |
 | `js/main.js` | 画面切り替え、会話の再生、章の進行、ホーム・マップ・会話画面、デバッグ |
-| `js/state.js` | 進捗(`done` / `cleared` / `unlockedPins`)の保存と読み込み、`progress()` |
+| `js/state.js` | 進捗(`done` / `cleared` / `seen` / `unlockedPins`)の保存と読み込み、`progress()` |
 | `js/story.js` | キャラ定義 `characters`、章データ `chapters`、章の順番 `chapterOrder` |
 | `js/map.js` | Leaflet の地図とピン `pins`(どのピンでどの章が始まるか) |
 | `js/games.js` | ミニゲームの登録(id → `start` 関数) |
@@ -32,13 +32,14 @@
 | `js/games/*.js` | 各ミニゲーム本体 |
 | `js/chat.js` / `js/chat-worker.js` | AI会話(かぐや)。WebLLM を Web Worker で動かす |
 | `image/*.PNG` | 元の立ち絵(4608×6144・約7MB。重いので画面では使わない) |
-| `img/*.webp` | 画面で使う立ち絵(高さ1000px・約80KB)。かぐやは `kaguya_normal` / `kaguya_laugh` / `kaguya_think` の3表情 |
+| `img/*.webp` | 画面で使う立ち絵(高さ1000px・約80KB)。かぐやは `kaguya_normal` / `kaguya_laugh` / `kaguya_think` の3表情。早良は `sawara_normal`、崇徳は `sutoku_normal`、平は `taira_normal`、菅原は `sugawara_normal`(かぐやと同じ拡大率で切り抜き。平・菅原は `image/taira.png` / `sugawara.png`(1536×2048・背景が透明)から、顔が横53%に来るように切り抜いた)。`title_illust`(720×960)はタイトル画面と、EDの【HAPPY END】で出す一枚絵(元は `image/title.png`。`story.js` の章の `cg`) |
 | `knowledge/*.txt` | AI会話に渡す知識テキスト。`system_rule.txt` がキャラ設定・ルール、`summary.txt` が常に渡す概要 |
 
 ## 物語の流れ
 
 プロローグ → 5章(`chapterOrder`: `sawara1` → `taira` → `sugawara` → `sutoku` → `sawara2`)→ ED → クリア後モード(全ピン開放・自由会話・ホームの「ミニゲーム」ボタンから各ゲームを何回でも遊べる。`js/main.js` の `openGames()` / `runGame(id, { replay: true })`。replay ではストーリーは進めない)。
-章は `lines`(ゲーム前の会話)→ `game` → `after`(クリア後の会話)→ `next` の順に進む。`anyResult: true` は負けイベント(勝敗に関係なく進む)。
+章は `lines`(ゲーム前の会話)→ `game` → `after`(クリア後の会話)→ `next` の順に進む。ゲームをクリアするまで(`lines` と、負けイベントの `after`)は、章の主役の子の立ち絵に怨霊の雲 `img/onryo_cloud.webp`(元は `image/onnryou.png`)をかぶせる(`js/main.js` の `haunt` / `heroineOf()`、CSS の `.chara.haunt::after`)。`anyResult: true` は負けイベント(勝敗に関係なく進む)。
+会話のスキップは、一度最後まで見た場面(`state.seen` の `"章id:lines"` / `"章id:after"`)だけ。はじめて見る場面ではスキップボタンが隠れる(デバッグモードのときは、いつでもスキップできる)。
 
 ## 変更するときの決まり
 
@@ -58,5 +59,5 @@
 - `js/story.js` で `【HAPPY END】` のように【】だけの行は、会話の枠のまん中に筆記体(Google Fonts の Great Vibes)で大きく、1文字ずつではなく一気に出る(`#textbox.ending`)
 - 縦画面前提(`100dvh`)。ボタンは指で押しやすい大きさに
 - 色は `css/style.css` の `:root`(夜空の藍色 `--ink`/`--panel`、桜色 `--sakura`/`--rose`、月の金色 `--moon`)を使う
-- 立ち絵を足すときは、`image/` の元画像を、表情どうしで同じ範囲を切り抜いてから高さ1000pxの WebP にして `img/` に置き(Pillow を使用)、`js/story.js` の `characters` の `image` / `poses` に書く。表情は `js/main.js` の `poseFor()` がセリフの言葉で選ぶ。タイトルはポーズ1(`kaguya_think`)を1.6倍・ホームは1.5倍・AI会話は2.1倍で顔と上半身中心(`background-size` の %)、ストーリーの会話(`#dialog`)とAI会話(`#chat`)は上半身だけ(`background-size: auto 180%` で拡大し、下と左右をマスクでぼかす)
+- 立ち絵を足すときは、`image/` の元画像を、表情どうしで同じ範囲を切り抜いてから高さ1000pxの WebP にして `img/` に置き(Pillow を使用)、`js/story.js` の `characters` の `image` / `poses` に書く。表情は `js/main.js` の `poseFor()` がセリフの言葉で選ぶ。タイトルとEDの一枚絵は `title_illust.webp`(`.illust`。タイトルは `#titleChara` で画面いっぱいに cover で敷き、題名とボタンを上に重ねる。EDは `#dialogCg` を画面の上から会話の枠の上まで使い、横幅の104%に拡大して、はみ出した左右と下をぼかす)・ホームは1.5倍・AI会話は2.1倍で顔と上半身中心(`background-size` の %)、ストーリーの会話(`#dialog`)とAI会話(`#chat`)は上半身だけ(`background-size: auto 180%` で拡大し、下と左右をマスクでぼかす)
 - 会話の枠(`.textbox`)は高さ固定(名前1行 + 本文5行)。本文は `textContent` に直接入れず、`createTyper` の `set()` を通す(1文字ずつ表示・ページ分けのため)。何度も変わる文(読み込みの % など)は `{ instant: true }` で出す。行の折り返しは `typer.js` の `phrase()` が言葉の区切り(ひらがな→漢字・カタカナの変わり目、、。の後)に目に見えないしるしを入れ、CSS の `word-break: keep-all` でそこだけで改行する。変な所で切れる言葉があれば `phrase()` のルールに足す。好きな所で改行したいときは、`story.js` のセリフに `\n` を書く(文の終わりで改行すると読みやすい。1つのセリフは、スマホ幅で枠に収まる5行以内が目安)

@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
 <script>
   // ★ ファイルを更新したら、この数字を1つ上げる(スマホが前のファイルを使い続けないようにする)
-  window.APP_VERSION = "22";
+  window.APP_VERSION = "31";
 
   // CSS に ?v=数字 を付ける
   const css = document.createElement("link");
@@ -43,7 +43,7 @@
   <!-- タイトル -->
   <section class="screen" id="title">
     <h1>Mukou City with Kaguya</h1>
-    <div class="stage solo"><div class="chara big" id="titleChara"></div></div>
+    <div class="stage solo titleStage"><div class="illust" id="titleChara" role="img" aria-label="かぐやと怨霊の女の子たち"></div></div>
     <div class="actions">
       <button class="btn main" id="start">ゲームstart</button>
       <button class="btn" id="restart" hidden>はじめから</button>
@@ -57,6 +57,8 @@
     <div class="stage" id="dialogStage">
       <div class="chara" id="charaL"></div>
       <div class="chara" id="charaR"></div>
+      <!-- 一枚絵(EDの【HAPPY END】で出す。story.js の cg) -->
+      <div class="illust" id="dialogCg" role="img" aria-label="かぐやと怨霊の女の子たち" hidden></div>
     </div>
     <div class="textbox" id="textbox">
       <!-- 上の段: 話す人の名前(左)と、ログ・スキップ(右)。文字と重ならないように同じ段に並べる -->

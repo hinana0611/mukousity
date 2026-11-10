@@ -99,6 +99,47 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
   filter: var(--script-glow);
 }
 #title .stage { padding-top: 8px; }
+/* タイトル・ハッピーエンドの一枚絵: 拡大せず、絵の全体がおさまるように出す(ふちだけ夜空にふんわり溶かす) */
+#title .titleStage { padding: 4px 0 0; align-items: stretch; }
+.illust {
+  /* 枠の形を絵と同じ縦長(3:4)にして、ふちのぼかしが絵のふちにかかるようにする */
+  flex: none; align-self: stretch; aspect-ratio: 3 / 4; max-width: 200%; margin: 0 auto;
+  background: center / contain no-repeat;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 4%, #000 88%, transparent 100%), linear-gradient(to right, transparent, #000 9%, #000 91%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 4%, #000 88%, transparent 100%), linear-gradient(to right, transparent, #000 9%, #000 91%, transparent);
+  mask-composite: intersect;
+  animation: floaty 5s ease-in-out infinite;
+}
+/* タイトル: 一枚絵を画面いっぱいに敷き、その上に題名とボタンを重ねる
+   (上と下は夜空にふんわり溶かして、題名とボタンを読みやすくする) */
+#title .titleStage { position: absolute; inset: 0; z-index: 0; padding: 0; }
+#title > :not(.titleStage) { position: relative; z-index: 1; }
+#title .actions { margin-top: auto; }
+#titleChara {
+  flex: 1; aspect-ratio: auto; max-width: none; margin: 0;
+  background-size: cover; background-position: center top;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 12%, #000 62%, transparent 94%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 12%, #000 62%, transparent 94%);
+}
+/* ハッピーエンド: 立ち絵のかわりに一枚絵を、ふわっと出す
+   画面の上から会話の枠の上までを使い、絵を横幅より少しだけ大きく(104%)して、みんなの顔がしっかり入るようにする。
+   はみ出した左右と下は、くっきり切れないように、ふんわりぼかす。
+   大きさは background-size の %、ぼかしの幅は mask の % で変えられる */
+#dialogCg {
+  position: absolute; top: env(safe-area-inset-top, 0px); left: 0; right: 0;
+  width: 100%; max-width: none; aspect-ratio: auto; margin: 0;
+  height: calc(100dvh - 250px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); /* 250px = 会話の枠とすきま */
+  background-size: 100% auto; background-position: 50% 0;
+  -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent 100%), linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to bottom, #000 82%, transparent 100%), linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+  mask-composite: intersect;
+  animation: cgIn 1.4s ease-out, floaty 5s ease-in-out 1.4s infinite;
+}
+#dialogStage.cg { padding-top: 12px; }
+#dialogStage.cg .chara { display: none; }
+@keyframes cgIn { from { opacity: 0; transform: scale(.96); } }
 .actions { display: flex; flex-direction: column; gap: 12px; width: 220px; margin: 0 auto 36px; }
 
 /* キャラ表示 */
@@ -226,6 +267,15 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
   mask-image: linear-gradient(to bottom, #000 78%, transparent 100%), linear-gradient(to right, transparent, #000 22%, #000 78%, transparent);
   mask-composite: intersect;
 }
+/* まだ救っていない子(クリア前)には、怨霊の黒い雲をかぶせる(js/main.js の haunt)。
+   雲は、ゆらゆら動く。大きさは background-size、位置は top / left で変えられる */
+#dialog .chara { position: relative; }
+#dialog .chara.hasImg.haunt::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 4%; height: 92%; pointer-events: none;
+  background: url(../img/onryo_cloud.webp) 50% 0 / auto 100% no-repeat;
+  opacity: .92; animation: hauntSway 4.5s ease-in-out infinite;
+}
+@keyframes hauntSway { 50% { transform: translate(-3%, 2%) scale(1.04); opacity: .8; } }
 /* ストーリーの会話: 立ち絵を少し下げる(上にすきまを空ける)。
    2つ目の数字が下げる量。画面の高さの8%(最小24px・最大70px)。大きくすると、もっと下がる */
 #dialog .chara.hasImg { width: 62%; background-position: 53% clamp(24px, 8vh, 70px); }

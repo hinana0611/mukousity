@@ -7,10 +7,10 @@ export const characters = {
     name: "かぐや", initial: "か", image: "img/kaguya_normal.webp",
     poses: { normal: "img/kaguya_normal.webp", laugh: "img/kaguya_laugh.webp", think: "img/kaguya_think.webp" }
   },
-  sawara: { name: "早良親王", initial: "早", image: "" },
-  taira: { name: "平将門", initial: "平", image: "" },
-  sugawara: { name: "菅原道真", initial: "菅", image: "" },
-  sutoku: { name: "崇徳上皇", initial: "崇", image: "" },
+  sawara: { name: "早良親王", initial: "早", image: "img/sawara_normal.webp" },
+  taira: { name: "平将門", initial: "平", image: "img/taira_normal.webp" },
+  sugawara: { name: "菅原道真", initial: "菅", image: "img/sugawara_normal.webp" },
+  sutoku: { name: "崇徳上皇", initial: "崇", image: "img/sutoku_normal.webp" },
   hero: { name: "主人公", hidden: true },
   both: { name: "主人公 / かぐや", hidden: true },
   onryo: { name: "美少女怨霊たち", hidden: true },
@@ -129,6 +129,7 @@ export const chapters = {
   // エピローグ:みんなで月で幸せに暮らそ!!(真エンド)
   ed: {
     next: "end",
+    cg: "img/title_illust.webp", // 【HAPPY END】の行で出す絵(タイトルと同じ)
     lines: [
       ["kaguya", "さあ、みんなで……\n『みんなで月で、幸せに暮らそ！！』"],
       ["onryo", "「はーいっ！」\n「うんっ！」\n「行ってあげるわ！」"],
