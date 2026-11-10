@@ -32,7 +32,7 @@
 | `js/games/*.js` | 各ミニゲーム本体 |
 | `js/chat.js` / `js/chat-worker.js` | AI会話(かぐや)。WebLLM を Web Worker で動かす |
 | `image/*.PNG` | 元の立ち絵(4608×6144・約7MB。重いので画面では使わない) |
-| `img/*.webp` | 画面で使う立ち絵(高さ1000px・約80KB)。かぐやは `kaguya_normal` / `kaguya_laugh` / `kaguya_think` の3表情。早良は `sawara_normal`、崇徳は `sutoku_normal`、平は `taira_normal`、菅原は `sugawara_normal`(かぐやと同じ拡大率で切り抜き。平・菅原は `image/taira.png` / `sugawara.png`(1536×2048・背景が透明)から、顔が横53%に来るように切り抜いた)。`title_illust`(720×960)はタイトル画面と、EDの【HAPPY END】で出す一枚絵(元は `image/title.png`。`story.js` の章の `cg`) |
+| `img/*.webp` | 画面で使う立ち絵(高さ1000px・約80KB)。かぐやはポーズ1(`kaguya_think`。ふつう・考え顔で使う)とポーズ2(`kaguya_laugh`。笑顔)の2枚だけを使う(設定画 `KAGUYA_settei` から作った絵は使わない)。早良は `sawara_normal`、崇徳は `sutoku_normal`、平は `taira_normal`、菅原は `sugawara_normal`(かぐやと同じ拡大率で切り抜き。平・菅原は `image/taira.png` / `sugawara.png`(1536×2048・背景が透明)から、顔が横53%に来るように切り抜いた)。`title_illust`(720×960)はタイトル画面と、EDの【HAPPY END】で出す一枚絵(元は `image/title.png`。`story.js` の章の `cg`) |
 | `knowledge/*.txt` | AI会話に渡す知識テキスト。`system_rule.txt` がキャラ設定・ルール、`summary.txt` が常に渡す概要 |
 
 ## 物語の流れ
