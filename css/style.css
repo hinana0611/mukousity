@@ -311,6 +311,47 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--moon); outl
 /* ホームの案内(下)と、タイトルの版番号 */
 .hint { margin: 0 20px 28px; padding: 10px 14px; text-align: center; color: #ffd6e2; font-size: 14px; font-weight: 700; border-radius: 999px; background: var(--glass); border: 1px solid rgba(245, 163, 187, .4); }
 .hint[hidden] { display: none; }
+/* ホームの下の段: 左はしにQRコード、右に案内 */
+.homeFoot { display: flex; align-items: center; gap: 10px; margin: 0 20px 22px; }
+.homeFoot .hint { flex: 1; margin: 0; }
+/* 「QR」ボタン: 金色のふちの丸い四角に、QR の文字 */
+.qrBtn {
+  flex: none; width: 52px; height: 52px; padding: 0; border-radius: 14px;
+  border: 2px solid rgba(242, 212, 121, .75); background: var(--glass);
+  font-size: 18px; font-weight: 700; letter-spacing: .04em; color: var(--moon);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .35);
+}
+.qrBtn:active { transform: scale(.95); }
+/* タイトルでは、画面の左下に置く */
+.titleQr { position: absolute !important; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+/* QRコードを大きく出す窓 */
+.qrPop { position: absolute; inset: 0; z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(10, 8, 30, .78); animation: askFade .18s ease-out; }
+.qrCard { width: 100%; max-width: 320px; padding: 20px; text-align: center; border-radius: 24px; background: linear-gradient(180deg, rgba(52, 38, 108, .98), rgba(28, 22, 66, .98)); border: 2px solid rgba(245, 163, 187, .6); box-shadow: 0 14px 34px rgba(0, 0, 0, .5); animation: askPop .22s ease-out; }
+.qrCard p { margin: 0 0 12px; font-weight: 700; color: #ffe6ee; }
+.qrCard canvas { display: block; width: min(232px, 70vw); height: auto; aspect-ratio: 1; margin: 0 auto 10px; border-radius: 12px; image-rendering: pixelated; }
+.qrCard .qrUrl { font-size: 11px; font-weight: 400; opacity: .7; word-break: break-all; }
+.qrCard .btn { width: 100%; }
+
+/* キャラクター: 左に顔の丸いアイコン、右に立ち絵 */
+.charsLabel { align-self: center; }
+.charsBody { flex: 1; min-height: 0; display: flex; gap: 8px; padding: 4px 12px calc(12px + env(safe-area-inset-bottom, 0px)); }
+.charsSide { flex: none; display: flex; flex-direction: column; gap: 12px; padding-top: 4px; }
+/* 顔の丸いアイコン(立ち絵の顔のあたりを大きくして、丸く切り抜く) */
+.faceBtn {
+  width: 60px; height: 60px; padding: 0; border-radius: 50%;
+  border: 3px solid rgba(245, 163, 187, .5);
+  background: #f7e9f3 53% 4% / auto 300% no-repeat;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .35);
+  transition: transform .15s, border-color .15s;
+}
+.faceBtn.on { border-color: var(--moon); box-shadow: 0 0 0 4px rgba(242, 212, 121, .3), 0 4px 10px rgba(0, 0, 0, .35); transform: scale(1.06); }
+.faceBtn.small { width: 52px; height: 52px; }
+.charsView { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; }
+.poseList { display: flex; gap: 14px; justify-content: center; padding: 4px 0 6px; }
+/* 立ち絵: 全身が入るように、拡大せずに出す */
+.charsArt { flex: 1; min-height: 0; width: 100%; background: center bottom / contain no-repeat; filter: drop-shadow(0 8px 16px rgba(0, 0, 0, .45)); animation: charsIn .3s ease-out; }
+@keyframes charsIn { from { opacity: 0; transform: translateY(8px); } }
+.charsName { margin: 6px 0 0; padding: 4px 18px; border-radius: 999px; background: var(--glass); border: 1px solid rgba(242, 212, 121, .5); color: var(--moon); font-weight: 700; }
 .ver { margin: -24px 0 10px; font-size: 11px; opacity: .5; text-align: center; }
 
 /* ホーム・上部バー */

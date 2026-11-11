@@ -6,7 +6,7 @@
 ## 技術構成
 
 - ビルドなし・依存インストールなしの素の HTML / CSS / ES Modules。フレームワークは使わない
-- 外部は CDN から読み込む: Leaflet 1.9.4 + OpenStreetMap タイル(地図)、`@mlc-ai/web-llm`(esm.run、AI会話)、Google Fonts
+- 外部は CDN から読み込む: Leaflet 1.9.4 + OpenStreetMap タイル(地図)、qrcode-generator 1.4.4(タイトルとホームの左下の「QR」ボタンで出すQRコード。`js/main.js` の `drawQr()` が、いまのアドレスを canvas に描く)、`@mlc-ai/web-llm`(esm.run、AI会話)、Google Fonts
 - 状態は `localStorage`(キー `mukou-game`)。サーバー側の処理はない
 - 公開は GitHub Pages 想定。リポジトリは公開なので、APIキーや秘密情報は絶対に入れない
 
@@ -22,7 +22,7 @@
 | ファイル | 役割 |
 | --- | --- |
 | `index.html` | 全画面の骨組み。`APP_VERSION` とキャッシュ対策の importmap を持つ |
-| `js/main.js` | 画面切り替え、会話の再生、章の進行、ホーム・マップ・会話画面、デバッグ |
+| `js/main.js` | 画面切り替え、会話の再生、章の進行、ホーム・マップ・会話画面、キャラクター画面(メニューから。`openChars()`: 左の顔アイコンで立ち絵を切り替え、表情が2つ以上あるかぐやは上の丸いボタンで表情も選べる)、QRコード、デバッグ |
 | `js/state.js` | 進捗(`done` / `cleared` / `seen` / `unlockedPins`)の保存と読み込み、`progress()` |
 | `js/story.js` | キャラ定義 `characters`、章データ `chapters`、章の順番 `chapterOrder` |
 | `js/map.js` | Leaflet の地図とピン `pins`(どのピンでどの章が始まるか) |

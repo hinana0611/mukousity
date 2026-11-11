@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
 <script>
   // ★ ファイルを更新したら、この数字を1つ上げる(スマホが前のファイルを使い続けないようにする)
-  window.APP_VERSION = "39";
+  window.APP_VERSION = "41";
 
   // CSS に ?v=数字 を付ける
   const css = document.createElement("link");
@@ -51,6 +51,8 @@
     </div>
     <p class="ver" id="ver"></p>
     <button type="button" class="dbgToggle" id="dbgToggle">デバッグモード: OFF</button>
+    <!-- 左下: このゲームのQRコードを出すボタン(ホームと同じ) -->
+    <button type="button" class="qrBtn titleQr" data-qr aria-label="このゲームのQRコードを表示">QR</button>
   </section>
  
   <!-- 会話(プロローグ・チュートリアル・ボス・EDで共通) -->
@@ -99,7 +101,11 @@
       <button type="button" class="homeBtn" data-go="chat"><i aria-hidden="true">💬</i>会話</button>
       <button type="button" class="homeBtn" data-go="games" id="homeGames" hidden><i aria-hidden="true">🎮</i>ミニゲーム</button>
     </div>
-    <p class="hint" id="homeHint">マップから次のストーリーに進もう</p>
+    <!-- 下の段: 左はしに、このゲームを開けるQRコード(押すと大きくなる)。右に、次にすることの案内 -->
+    <div class="homeFoot">
+      <button type="button" class="qrBtn" data-qr aria-label="このゲームのQRコードを表示">QR</button>
+      <p class="hint" id="homeHint">マップから次のストーリーに進もう</p>
+    </div>
   </section>
  
   <!-- マップ -->
@@ -136,6 +142,24 @@
     <div class="gameList" id="gameList"></div>
   </section>
 
+  <!-- キャラクター(メニューから開く): 左に顔の丸いアイコン、押すとそのキャラの立ち絵を大きく出す -->
+  <section class="screen" id="chars">
+    <div class="topbar">
+      <button class="icon" data-go="home" aria-label="ホームへ">←</button>
+      <button class="menuBtn menuTab" aria-label="メニュー" aria-expanded="false">メニュー <span aria-hidden="true">▾</span></button>
+      <span class="label charsLabel">キャラクター</span>
+    </div>
+    <div class="charsBody">
+      <div class="charsSide" id="charsSide" role="tablist" aria-label="キャラクターを選ぶ"></div>
+      <div class="charsView">
+        <!-- 表情ちがい(かぐやだけ)。上に丸いボタンで並べる -->
+        <div class="poseList" id="poseList" role="tablist" aria-label="表情を選ぶ"></div>
+        <div class="charsArt" id="charsArt" role="img"></div>
+        <p class="charsName" id="charsName"></p>
+      </div>
+    </div>
+  </section>
+
   <!-- AI会話 -->
   <section class="screen" id="chat">
     <div class="topbar">
@@ -164,6 +188,7 @@
   <!-- 共通メニュー(ホーム・マップ・会話の☰から開く) -->
   <nav id="menu" hidden>
     <button class="btn" data-go="home">🏠 ホーム</button>
+    <button class="btn" data-go="chars">👘 キャラクター</button>
     <button class="btn" data-go="title">🎬 タイトルへ</button>
   </nav>
  
@@ -175,6 +200,16 @@
         <button type="button" class="btn main" id="askYes">はい</button>
         <button type="button" class="btn" id="askNo">いいえ</button>
       </div>
+    </div>
+  </div>
+
+  <!-- QRコードを大きく出す窓。どこを押しても閉じる -->
+  <div class="qrPop" id="qrPop" hidden>
+    <div class="qrCard" role="dialog" aria-modal="true" aria-labelledby="qrTitle">
+      <p id="qrTitle">スマホのカメラで読みとると<br>このゲームが開けます</p>
+      <canvas id="qrBig" width="232" height="232"></canvas>
+      <p class="qrUrl" id="qrUrl"></p>
+      <button type="button" class="btn main" id="qrClose">とじる</button>
     </div>
   </div>
 
@@ -191,6 +226,8 @@
 </div>
  
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<!-- QRコードを作る道具(ホームの左下のQRコード) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
   // iPhone の Safari は user-scalable=no を無視するので、2本指で広げる拡大(ピンチ)をここで止める
   // (地図の拡大は Leaflet が自分でやるので、これを止めても地図は2本指で拡大できる)

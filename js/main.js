@@ -411,7 +411,98 @@ document.addEventListener("click", e => {
   if (go === "map") openMap();
   if (go === "chat") openChat();
   if (go === "games") openGames();
+  if (go === "chars") openChars();
 });
+
+/* ---------- QRコード(ホームの左下) ----------
+   このゲームのアドレスをQRコードにする。友だちのスマホで読みとってもらえば、すぐ遊べる */
+const appUrl = () => location.origin + location.pathname;
+
+// canvas に QRコードを描く(白い紙に黒い四角。まわりに少し白いすきま)
+function drawQr(canvas) {
+  const ctx = canvas.getContext("2d");
+  const size = canvas.width;
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, size, size);
+  if (typeof qrcode !== "function") return false; // 道具が読みこめなかった(電波がないなど)
+  const qr = qrcode(0, "M");
+  qr.addData(appUrl());
+  qr.make();
+  const n = qr.getModuleCount();
+  const cell = size / (n + 4); // まわりに2マスずつ白いすきま
+  ctx.fillStyle = "#1b1550";
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) {
+      if (qr.isDark(r, c)) ctx.fillRect(Math.floor((c + 2) * cell), Math.floor((r + 2) * cell), Math.ceil(cell), Math.ceil(cell));
+    }
+  }
+  return true;
+}
+// 「QR」ボタン(タイトルとホームの左下)を押すと、QRコードを大きく出す
+document.querySelectorAll("[data-qr]").forEach(b => {
+  b.onclick = () => {
+    drawQr($("qrBig"));
+    $("qrUrl").textContent = appUrl();
+    $("qrPop").hidden = false;
+  };
+});
+$("qrPop").onclick = () => { $("qrPop").hidden = true; };
+
+/* ---------- キャラクター(メニューから) ----------
+   左の丸いアイコン(顔)を押すと、そのキャラの立ち絵を大きく出す。かぐやは表情ちがいも選べる */
+const galleryKeys = () => Object.keys(characters).filter(k => !characters[k].hidden && characters[k].image);
+let charsKey = "kaguya";
+
+function openChars() {
+  const side = $("charsSide");
+  side.replaceChildren(...galleryKeys().map(key => {
+    const c = characters[key];
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "faceBtn";
+    b.dataset.key = key;
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-label", c.name);
+    b.style.backgroundImage = `url(${c.image})`;
+    b.onclick = () => showCharaArt(key);
+    return b;
+  }));
+  show("chars");
+  showCharaArt(galleryKeys().includes(charsKey) ? charsKey : galleryKeys()[0]);
+}
+
+// 表情ちがい(同じ絵は1つにまとめる)。かぐやは ポーズ1・ポーズ2 の2枚
+const posesOf = c => [...new Set([c.image, ...Object.values(c.poses ?? {})])].filter(Boolean);
+
+function showCharaArt(key, image) {
+  charsKey = key;
+  const c = characters[key];
+  const poses = posesOf(c);
+  const src = image ?? poses[0];
+  $("charsArt").style.backgroundImage = `url(${src})`;
+  $("charsArt").setAttribute("aria-label", c.name + "の立ち絵");
+  $("charsName").textContent = c.name;
+  // 左のアイコン: 選んでいるキャラに印を付ける
+  $("charsSide").querySelectorAll(".faceBtn").forEach(b => {
+    const on = b.dataset.key === key;
+    b.classList.toggle("on", on);
+    b.setAttribute("aria-selected", String(on));
+  });
+  // 上の丸いボタン: 表情が2つ以上あるキャラ(かぐや)だけ出す
+  const list = $("poseList");
+  list.hidden = poses.length < 2;
+  list.replaceChildren(...(poses.length < 2 ? [] : poses.map((p, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "faceBtn small" + (p === src ? " on" : "");
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-selected", String(p === src));
+    b.setAttribute("aria-label", `表情 ${i + 1}`);
+    b.style.backgroundImage = `url(${p})`;
+    b.onclick = () => showCharaArt(key, p);
+    return b;
+  })));
+}
 
 /* ---------- マップ ---------- */
 const nextChapter = () => chapterOrder.find(id => !state.done.includes(id));
